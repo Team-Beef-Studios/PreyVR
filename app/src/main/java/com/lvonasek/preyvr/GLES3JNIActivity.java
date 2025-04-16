@@ -271,11 +271,9 @@ import java.util.Vector;
 			try {
 				in = assets.open(file);
 			} catch (IOException e) {
-				System.exit(1);
+				e.printStackTrace();
 			}
-			if (!unpack_file(in, new File(base, file), false)) {
-				System.exit(1);
-			}
+			unpack_file(in, new File(base, file), false);
 		}
 	}
 
