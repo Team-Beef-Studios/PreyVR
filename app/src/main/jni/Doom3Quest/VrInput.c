@@ -68,10 +68,6 @@ int milliseconds() {
 
 #endif
 
-XrTime ToXrTime(const double timeInSeconds) {
-	return (XrTime)(timeInSeconds * 1e9);
-}
-
 void INVR_Vibrate( float duration, int channel, float intensity ) {
 	if (intensity > 0) {
 		XrHapticVibration vibration = {};

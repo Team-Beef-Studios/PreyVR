@@ -15,7 +15,7 @@ void ovrFramebuffer_Release(ovrFramebuffer* frameBuffer);
 void ovrFramebuffer_SetCurrent(ovrFramebuffer* frameBuffer);
 void ovrFramebuffer_SetNone();
 
-void ovrRenderer_Create(XrSession session, ovrRenderer* renderer, int width, int height);
+void ovrRenderer_Create(XrSession session, ovrRenderer* renderer, bool useMultiview, int width, int height, int multisamples);
 void ovrRenderer_Destroy(ovrRenderer* renderer);
 void ovrRenderer_MouseCursor(ovrRenderer* renderer, int x, int y, int sx, int sy);
 #ifdef ANDROID

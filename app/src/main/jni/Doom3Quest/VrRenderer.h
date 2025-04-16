@@ -9,7 +9,7 @@ enum VRConfig {
 	//mouse cursor
 	VR_CONFIG_MOUSE_SIZE, VR_CONFIG_MOUSE_X, VR_CONFIG_MOUSE_Y,
 	//viewport setup
-	VR_CONFIG_VIEWPORT_WIDTH, VR_CONFIG_VIEWPORT_HEIGHT, VR_CONFIG_VIEWPORT_VALID,
+	VR_CONFIG_VIEWPORT_WIDTH, VR_CONFIG_VIEWPORT_HEIGHT, VR_CONFIG_VIEWPORT_VALID, VR_CONFIG_VIEWPORT_MSAA,
 
 	//end
 	VR_CONFIG_MAX
@@ -20,8 +20,8 @@ enum VRConfigFloat {
 	VR_CONFIG_CANVAS_DISTANCE, VR_CONFIG_MENU_YAW, VR_CONFIG_RECENTER_YAW,
 	VR_CONFIG_CANVAS_ASPECT,
 
-	// Field of view
-	VR_CONFIG_FOVX, VR_CONFIG_FOVY,
+	// Viewport setup
+	VR_CONFIG_VIEWPORT_FOVX, VR_CONFIG_VIEWPORT_FOVY, VR_CONFIG_VIEWPORT_SUPERSAMPLING,
 
 	VR_CONFIG_FLOAT_MAX
 };
@@ -48,7 +48,6 @@ float VR_GetConfigFloat( enum VRConfigFloat config );
 void VR_SetConfigFloat( enum VRConfigFloat config, float value );
 
 void VR_BindFramebuffer(engine_t *engine);
-XrView VR_GetView(int eye);
-XrVector3f VR_GetHMDAngles();
+XrPosef VR_GetView(int eye);
 int VR_GetRefreshRate();
 void VR_SetRefreshRate(int refresh);

@@ -57,8 +57,8 @@ struct version_s {
 	char	string[256];
 } version;
 
-idCVar vr_refreshrate( "vr_refreshrate", "60", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
-idCVar vr_supersampling( "vr_supersampling", "-1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
+idCVar vr_refreshrate( "vr_refreshrate", "72", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
+idCVar vr_supersampling( "vr_supersampling", "1.1", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
 idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
 
 idCVar com_version("si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version");
@@ -2647,7 +2647,7 @@ void idCommonLocal::InitSIMD(void)
 	com_forceGenericSIMD.ClearModified();
 }
 
-extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
+extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling);
 extern "C" void Doom3Quest_Vibrate(int channel, float low, float high, int length );
 extern "C" void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 extern "C" void Doom3Quest_HapticStopEvent(const char* event);
@@ -2693,7 +2693,9 @@ void idCommonLocal::Frame(void)
 		
 		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_weaponHand"),
 							  cvarSystem->GetCVarInteger("vr_switchSticks"),
-							  cvarSystem->GetCVarInteger("vr_refreshrate"));
+							  cvarSystem->GetCVarInteger("vr_refreshrate"),
+							  cvarSystem->GetCVarFloat("vr_msaa"),
+							  cvarSystem->GetCVarFloat("vr_supersampling"));
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

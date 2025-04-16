@@ -76,12 +76,13 @@ typedef struct
 typedef struct {
 	int Width;
 	int Height;
+	int Multisamples;
+	bool UseMultiview;
 	uint32_t TextureSwapChainLength;
 	uint32_t TextureSwapChainIndex;
 	ovrSwapChain ColorSwapChain;
-	ovrSwapChain DepthSwapChain;
 	XrSwapchainImageOpenGLESKHR* ColorSwapChainImage;
-	XrSwapchainImageOpenGLESKHR* DepthSwapChainImage;
+	unsigned int* DepthBuffers;
 	unsigned int* FrameBuffers;
 } ovrFramebuffer;
 
@@ -107,9 +108,6 @@ typedef struct {
 	// These threads will be marked as performance threads.
 	int MainThreadTid;
 	int RenderThreadTid;
-	ovrCompositorLayer_Union Layers[ovrMaxLayerCount];
-	int LayerCount;
-
 	ovrRenderer Renderer;
 } ovrApp;
 
@@ -135,6 +133,7 @@ enum VRPlatformFlag {
 	VR_PLATFORM_EXTENSION_PERFORMANCE,
 	VR_PLATFORM_EXTENSION_REFRESH,
 	VR_PLATFORM_TRACKING_FLOOR,
+	VR_PLATFORM_VIEWPORT_SQUARE,
 	VR_PLATFORM_MAX
 };
 

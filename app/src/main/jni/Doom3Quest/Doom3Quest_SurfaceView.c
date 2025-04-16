@@ -349,7 +349,6 @@ static ANativeWindow *NativeWindow;
 static JavaVM *jVM;
 static bool destroyed = false;
 
-bool frameValid = false;
 time_t seconds;
 int lastRefresh = 0;
 int currentRefresh = 60;
@@ -358,9 +357,9 @@ float Doom3Quest_GetFOV(int axis)
 {
 	switch (axis) {
 		case 0:
-			return VR_GetConfigFloat(VR_CONFIG_FOVX);
+			return VR_GetConfigFloat(VR_CONFIG_VIEWPORT_FOVX);
 		case 1:
-			return VR_GetConfigFloat(VR_CONFIG_FOVY);
+			return VR_GetConfigFloat(VR_CONFIG_VIEWPORT_FOVY);
 		default:
 			return 0;
 	}
@@ -387,23 +386,19 @@ void Doom3Quest_prepareEyeBuffer( )
 	VR_SetConfigFloat(VR_CONFIG_CANVAS_DISTANCE, 4);
 	VR_SetConfig(VR_CONFIG_MODE, Doom3Quest_useScreenLayer() ? VR_MODE_STEREO_SCREEN : VR_MODE_STEREO_6DOF);
 
-	frameValid = VR_InitFrame(VR_GetEngine());
-	if (frameValid) {
-		VR_BeginFrame(VR_GetEngine());
-		VR_BindFramebuffer(VR_GetEngine());
-		Doom3Quest_getHMDOrientation();
-	}
+	VR_BeginFrame(VR_GetEngine());
+	VR_BindFramebuffer(VR_GetEngine());
 }
 
 void Doom3Quest_finishEyeBuffer( )
 {
-	if (frameValid) {
-		VR_EndFrame(VR_GetEngine());
-		VR_FinishFrame(VR_GetEngine());
-		frameValid = false;
-	}
-
+	VR_EndFrame(VR_GetEngine());
+	VR_FinishFrame(VR_GetEngine());
 	Doom3Quest_HapticEndFrame();
+
+	if (Doom3Quest_useScreenLayer()) {
+		VR_InitFrame(VR_GetEngine());
+	}
 }
 
 void shutdownVR() {
@@ -467,13 +462,28 @@ void * AppThreadFunction(void * parm) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling)
 {
+	//Inform GL thread about required framebuffer parameters.
+	if (fabs(VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING) - supersampling) > 0.01) {
+		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING, supersampling);
+		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
+	}
+	if (fabs((float)VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA) - msaa) > 0.01) {
+		VR_SetConfig(VR_CONFIG_VIEWPORT_MSAA, (int)msaa);
+		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
+	}
+
+	//Update refresh rate
 	if (lastRefresh != refresh) {
 		lastRefresh = refresh;
 		VR_SetRefreshRate(refresh);
 		currentRefresh = VR_GetRefreshRate();
 	}
+	if (!Doom3Quest_useScreenLayer()) {
+		VR_InitFrame(VR_GetEngine());
+	}
+	Doom3Quest_getHMDOrientation();
 	pVRClientInfo->right_handed = !controlscheme;
 	HandleInput_Default(controlscheme, switch_sticks);
 }
@@ -482,7 +492,7 @@ void Doom3Quest_getHMDOrientation() {
 
 	//Don't update game with tracking if we are in big screen mode
     //GB Do pass the stuff but block at my end (if big screen prompt is needed)
-	XrPosef hmd = VR_GetView(0).pose;
+	XrPosef hmd = VR_GetView(0);
     const XrQuaternionf quatHmd = hmd.orientation;
     const XrVector3f positionHmd = hmd.position;
     //const XrVector3f translationHmd = tracking->HeadPose.Pose.Translation;
@@ -672,6 +682,7 @@ JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * e
 	java.ActivityObject = (*env)->NewGlobalRef( env, activity );
 	(*java.Vm)->AttachCurrentThread(java.Vm, &java.Env, NULL);
 	VR_Init(&java, "PreyVR", "1");
+	VR_InitRenderer(VR_GetEngine(), true);
 }
 
 

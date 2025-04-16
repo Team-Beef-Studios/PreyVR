@@ -7,16 +7,13 @@
 
 XrFovf fov;
 XrView* projections;
-XrPosef invViewTransform[2];
-XrFrameState frameState = {};
 bool initialized = false;
+bool stageBoundsDirty = true;
 bool stageSupported = false;
 int vrConfig[VR_CONFIG_MAX] = {};
 float vrConfigFloat[VR_CONFIG_FLOAT_MAX] = {};
 PFN_xrGetDisplayRefreshRateFB pfnGetDisplayRefreshRate = NULL;
 PFN_xrRequestDisplayRefreshRateFB pfnRequestDisplayRefreshRate = NULL;
-
-XrVector3f hmdorientation;
 
 void VR_UpdateStageBounds(ovrApp* pappState) {
 	XrExtent2Df stageBounds = {};
@@ -114,6 +111,18 @@ void VR_GetResolution(engine_t* engine, int *pWidth, int *pHeight) {
 		*pWidth = width;
 		*pHeight = height;
 	}
+
+	//Apply supersampling
+	float supersampling = VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING);
+	if (supersampling > 0) {
+		*pWidth *= supersampling;
+		*pHeight *= supersampling;
+	}
+
+	//Force square resolution
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
+		*pHeight = *pWidth;
+	}
 }
 
 void VR_Recenter(engine_t* engine) {
@@ -126,9 +135,9 @@ void VR_Recenter(engine_t* engine) {
 		XrSpaceLocation loc = {};
 		loc.type = XR_TYPE_SPACE_LOCATION;
 		OXR(xrLocateSpace(engine->appState.HeadSpace, engine->appState.CurrentSpace, engine->predictedDisplayTime, &loc));
-		hmdorientation = XrQuaternionf_ToEulerAngles(loc.pose.orientation);
+		XrVector3f hmdangles = XrQuaternionf_ToEulerAngles(loc.pose.orientation);
 
-		VR_SetConfigFloat(VR_CONFIG_RECENTER_YAW, VR_GetConfigFloat(VR_CONFIG_RECENTER_YAW) + hmdorientation.y);
+		VR_SetConfigFloat(VR_CONFIG_RECENTER_YAW, VR_GetConfigFloat(VR_CONFIG_RECENTER_YAW) + hmdangles.y);
 		float recenterYaw = ToRadians(VR_GetConfigFloat(VR_CONFIG_RECENTER_YAW));
 		spaceCreateInfo.poseInReferenceSpace.orientation.x = 0;
 		spaceCreateInfo.poseInReferenceSpace.orientation.y = sinf(recenterYaw / 2);
@@ -167,6 +176,7 @@ void VR_Recenter(engine_t* engine) {
 
 	// Update menu orientation
 	VR_SetConfigFloat(VR_CONFIG_MENU_YAW, 0.0f);
+	stageBoundsDirty = true;
 }
 
 void VR_InitRenderer( engine_t* engine, bool multiview ) {
@@ -207,9 +217,8 @@ void VR_InitRenderer( engine_t* engine, bool multiview ) {
 		projections[eye].type = XR_TYPE_VIEW;
 	}
 
-	ovrRenderer_Create(engine->appState.Session, &engine->appState.Renderer,
-			engine->appState.ViewConfigurationView[0].recommendedImageRectWidth,
-			engine->appState.ViewConfigurationView[0].recommendedImageRectHeight);
+	int msaa = VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA);
+	ovrRenderer_Create(engine->appState.Session, &engine->appState.Renderer, multiview, eyeW, eyeH, msaa > 0 ? msaa : 1);
 #ifdef ANDROID
 	if (VR_GetPlatformFlag(VR_PLATFORM_EXTENSION_FOVEATION)) {
 		ovrRenderer_SetFoveation(&engine->appState.Instance, &engine->appState.Session, &engine->appState.Renderer, XR_FOVEATION_LEVEL_HIGH_FB, 0, XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB);
@@ -225,7 +234,6 @@ void VR_DestroyRenderer( engine_t* engine ) {
 }
 
 bool VR_InitFrame( engine_t* engine ) {
-	bool stageBoundsDirty = true;
 	if (ovrApp_HandleXrEvents(&engine->appState)) {
 		VR_Recenter(engine);
 	}
@@ -238,23 +246,21 @@ bool VR_InitFrame( engine_t* engine ) {
 		stageBoundsDirty = false;
 	}
 
+	XrFrameState frameState = {};
 	frameState.type = XR_TYPE_FRAME_STATE;
 	frameState.next = NULL;
-
 	OXR(xrWaitFrame(engine->appState.Session, 0, &frameState));
 	engine->predictedDisplayTime = frameState.predictedDisplayTime;
 
+	// Update HMD
 	XrViewLocateInfo projectionInfo = {};
 	projectionInfo.type = XR_TYPE_VIEW_LOCATE_INFO;
 	projectionInfo.viewConfigurationType = engine->appState.ViewportConfig.viewConfigurationType;
 	projectionInfo.displayTime = frameState.predictedDisplayTime;
 	projectionInfo.space = engine->appState.CurrentSpace;
-
 	XrViewState viewState = {XR_TYPE_VIEW_STATE, NULL};
-
 	uint32_t projectionCapacityInput = ovrMaxNumEyes;
 	uint32_t projectionCountOutput = projectionCapacityInput;
-
 	OXR(xrLocateViews(
 			engine->appState.Session,
 			&projectionInfo,
@@ -262,6 +268,33 @@ bool VR_InitFrame( engine_t* engine ) {
 			projectionCapacityInput,
 			&projectionCountOutput,
 			projections));
+
+	// Update controllers
+	IN_VRInputFrame(engine);
+
+	float fovx = 0;
+	float fovy = 0;
+	for (int eye = 0; eye < ovrMaxNumEyes; eye++) {
+		fovx += fabs(projections[eye].fov.angleDown - projections[eye].fov.angleUp) / 2.0f;
+		fovy += fabs(projections[eye].fov.angleRight - projections[eye].fov.angleLeft) / 2.0f;
+	}
+
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
+		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVX, ToDegrees(fovy));
+		fov.angleLeft = -fovy / 2.0f;
+		fov.angleRight = fovy / 2.0f;
+	} else {
+	   VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVX, ToDegrees(fovx));
+	   fov.angleLeft = -fovx / 2.0f;
+	   fov.angleRight = fovx / 2.0f;
+	}
+	VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVY, ToDegrees(fovy));
+	fov.angleDown = -fovy / 2.0f;
+	fov.angleUp = fovy / 2.0f;
+	return true;
+}
+
+void VR_BeginFrame( engine_t* engine ) {
 	// Get the HMD pose, predicted for the middle of the time period during which
 	// the new eye images will be displayed. The number of frames predicted ahead
 	// depends on the pipeline depth of the engine and the synthesis rate.
@@ -271,30 +304,6 @@ bool VR_InitFrame( engine_t* engine ) {
 	beginFrameDesc.next = NULL;
 	OXR(xrBeginFrame(engine->appState.Session, &beginFrameDesc));
 
-	float fovx = 0;
-	float fovy = 0;
-	for (int eye = 0; eye < ovrMaxNumEyes; eye++) {
-		fovx += fabs(projections[eye].fov.angleDown - projections[eye].fov.angleUp) / 2.0f;
-		fovy += fabs(projections[eye].fov.angleRight - projections[eye].fov.angleLeft) / 2.0f;
-		invViewTransform[eye] = projections[eye].pose;
-	}
-	VR_SetConfigFloat(VR_CONFIG_FOVX, ToDegrees(fovx));
-	VR_SetConfigFloat(VR_CONFIG_FOVY, ToDegrees(fovy));
-	fov.angleLeft = -fovx / 2.0f;
-	fov.angleRight = fovx / 2.0f;
-	fov.angleDown = -fovy / 2.0f;
-	fov.angleUp = fovy / 2.0f;
-
-	// Update HMD and controllers
-	hmdorientation = XrQuaternionf_ToEulerAngles(invViewTransform[0].orientation);
-	IN_VRInputFrame(engine);
-
-	engine->appState.LayerCount = 0;
-	memset(engine->appState.Layers, 0, sizeof(ovrCompositorLayer_Union) * ovrMaxLayerCount);
-	return true;
-}
-
-void VR_BeginFrame( engine_t* engine ) {
 	ovrFramebuffer_Acquire(&engine->appState.Renderer.FrameBuffer);
 	ovrFramebuffer_SetCurrent(&engine->appState.Renderer.FrameBuffer);
 }
@@ -319,21 +328,20 @@ void VR_EndFrame( engine_t* engine ) {
 }
 
 void VR_FinishFrame( engine_t* engine ) {
+	int layerCount = 0;
+	ovrCompositorLayer_Union layerUnion[ovrMaxLayerCount];
+	memset(layerUnion, 0, sizeof(ovrCompositorLayer_Union) * ovrMaxLayerCount);
+
 	int vrMode = vrConfig[VR_CONFIG_MODE];
 	XrCompositionLayerProjectionView projection_layer_elements[2] = {};
 	if ((vrMode == VR_MODE_MONO_6DOF) || (vrMode == VR_MODE_STEREO_6DOF)) {
-		VR_SetConfigFloat(VR_CONFIG_MENU_YAW, hmdorientation.y);
+		VR_SetConfigFloat(VR_CONFIG_MENU_YAW, XrQuaternionf_ToEulerAngles(projections[0].pose.orientation).y);
 
 		for (int eye = 0; eye < ovrMaxNumEyes; eye++) {
 			ovrFramebuffer* frameBuffer = &engine->appState.Renderer.FrameBuffer;
-			XrPosef pose = projections[0].pose;
-			if (vrMode != VR_MODE_MONO_6DOF) {
-				pose = projections[eye].pose;
-			}
-
 			memset(&projection_layer_elements[eye], 0, sizeof(XrCompositionLayerProjectionView));
 			projection_layer_elements[eye].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-			projection_layer_elements[eye].pose = pose;
+			projection_layer_elements[eye].pose = projections[eye].pose;
 			projection_layer_elements[eye].fov = fov;
 
 			memset(&projection_layer_elements[eye].subImage, 0, sizeof(XrSwapchainSubImage));
@@ -351,16 +359,16 @@ void VR_FinishFrame( engine_t* engine ) {
 		projection_layer.viewCount = ovrMaxNumEyes;
 		projection_layer.views = projection_layer_elements;
 
-		engine->appState.Layers[engine->appState.LayerCount++].Projection = projection_layer;
+		layerUnion[layerCount++].Projection = projection_layer;
 	} else if ((vrMode == VR_MODE_MONO_SCREEN) || (vrMode == VR_MODE_STEREO_SCREEN)) {
 
 		// Flat screen pose
 		float distance = VR_GetConfigFloat(VR_CONFIG_CANVAS_DISTANCE);
 		float menuYaw = ToRadians(VR_GetConfigFloat(VR_CONFIG_MENU_YAW));
 		XrVector3f pos = {
-				invViewTransform[0].position.x - sinf(menuYaw) * distance,
-				invViewTransform[0].position.y - 1.5f,
-				invViewTransform[0].position.z - cosf(menuYaw) * distance
+				projections[0].pose.position.x - sinf(menuYaw) * distance,
+				projections[0].pose.position.y - 1.5f,
+				projections[0].pose.position.z - cosf(menuYaw) * distance
 		};
 		XrVector3f yawAxis = {0, 1, 0};
 		XrQuaternionf yaw = XrQuaternionf_CreateFromVectorAngle(yawAxis, menuYaw);
@@ -385,13 +393,13 @@ void VR_FinishFrame( engine_t* engine ) {
 		// Build the cylinder layer
 		if (vrMode == VR_MODE_MONO_SCREEN) {
 			cylinder_layer.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
-			engine->appState.Layers[engine->appState.LayerCount++].Cylinder = cylinder_layer;
+			layerUnion[layerCount++].Cylinder = cylinder_layer;
 		} else {
 			cylinder_layer.eyeVisibility = XR_EYE_VISIBILITY_LEFT;
-			engine->appState.Layers[engine->appState.LayerCount++].Cylinder = cylinder_layer;
+			layerUnion[layerCount++].Cylinder = cylinder_layer;
 			cylinder_layer.eyeVisibility = XR_EYE_VISIBILITY_RIGHT;
 			cylinder_layer.subImage.imageArrayIndex = 0;
-			engine->appState.Layers[engine->appState.LayerCount++].Cylinder = cylinder_layer;
+			layerUnion[layerCount++].Cylinder = cylinder_layer;
 		}
 	} else {
 		assert(false);
@@ -399,15 +407,15 @@ void VR_FinishFrame( engine_t* engine ) {
 
 	// Compose the layers for this frame.
 	const XrCompositionLayerBaseHeader* layers[ovrMaxLayerCount] = {};
-	for (int i = 0; i < engine->appState.LayerCount; i++) {
-		layers[i] = (const XrCompositionLayerBaseHeader*)&engine->appState.Layers[i];
+	for (int i = 0; i < layerCount; i++) {
+		layers[i] = (const XrCompositionLayerBaseHeader*)&layerUnion[i];
 	}
 
 	XrFrameEndInfo endFrameInfo = {};
 	endFrameInfo.type = XR_TYPE_FRAME_END_INFO;
-	endFrameInfo.displayTime = frameState.predictedDisplayTime;
+	endFrameInfo.displayTime = engine->predictedDisplayTime;
 	endFrameInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-	endFrameInfo.layerCount = engine->appState.LayerCount;
+	endFrameInfo.layerCount = layerCount;
 	endFrameInfo.layers = layers;
 	OXR(xrEndFrame(engine->appState.Session, &endFrameInfo));
 
@@ -438,12 +446,8 @@ void VR_BindFramebuffer(engine_t *engine) {
 	ovrFramebuffer_SetCurrent(&engine->appState.Renderer.FrameBuffer);
 }
 
-XrView VR_GetView(int eye) {
-	return projections[eye];
-}
-
-XrVector3f VR_GetHMDAngles() {
-	return hmdorientation;
+XrPosef VR_GetView(int eye) {
+	return projections[eye].pose;
 }
 
 int VR_GetRefreshRate() {

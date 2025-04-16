@@ -14,6 +14,10 @@ typedef struct {
 	float M[4][4];
 } ovrMatrix4f;
 
+// XrTime
+double FromXrTime(const XrTime time);
+XrTime ToXrTime(const double timeInSeconds);
+
 // XrPosef
 XrPosef XrPosef_Identity();
 XrPosef XrPosef_Inverse(const XrPosef a);
