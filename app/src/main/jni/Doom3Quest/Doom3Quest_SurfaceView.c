@@ -672,6 +672,7 @@ JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * e
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_FOVEATION, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_REFRESH, true);
+		VR_SetPlatformFLag(VR_PLATFORM_VIEWPORT_UNCENTERED, true);
 	}
 	VR_SetPlatformFLag(VR_PLATFORM_TRACKING_FLOOR, true);
 

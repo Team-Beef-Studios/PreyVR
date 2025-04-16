@@ -279,6 +279,10 @@ bool VR_InitFrame( engine_t* engine ) {
 		fovy += fabs(projections[eye].fov.angleRight - projections[eye].fov.angleLeft) / 2.0f;
 	}
 
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_UNCENTERED)) {
+		fovy *= 1.1f;
+	}
+
 	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
 		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVX, ToDegrees(fovy));
 		fov.angleLeft = -fovy / 2.0f;
