@@ -801,8 +801,69 @@
 							}
 						}
 
-						buttonDef OVA_Shadows {
+						buttonDef OVA_Supersampling {
 							rect			10, 220, 400, 50
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+
+							windowDef OVA_Title_Supersampling {
+								rect		0, 0, 200, 25
+								forecolor	STATIC_FORECOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"Supersampling"
+							}
+							choiceDef OVA_Choice_Supersampling {
+								rect		200, 0, 200, 25
+								forecolor	EDITABLE_FORECOLOR_COMMA
+								hovercolor	EDITABLE_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								cvar		"vr_supersampling"
+								choices		"0.9;1.0;1.1;1.2;1.3"
+								values		"0.9;1.0;1.1;1.2;1.3"
+								choiceType	1
+							}
+						}
+
+						buttonDef OVA_MSAA {
+							rect			10, 250, 400, 50
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			("gui::powerfulHMD" != 0)
+
+							windowDef OVA_Title_MSAA {
+								rect		0, 0, 200, 25
+								forecolor	STATIC_FORECOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"MSAA"
+							}
+							choiceDef OVA_Choice_MSAA {
+								rect		200, 0, 200, 25
+								forecolor	EDITABLE_FORECOLOR_COMMA
+								hovercolor	EDITABLE_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								cvar		"vr_msaa"
+								choices		"1;2;4"
+								values		"1;2;4"
+								choiceType	1
+							}
+						}
+
+						buttonDef OVA_Shadows {
+							rect			10, 280, 400, 50
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
