@@ -128,9 +128,9 @@ void main()
   //Lubos BEGIN
   float scale = 4.0;
   float smoothing = 0.33;
-  color.r += u_specularColor.r * pow(pbr.r, smoothing) * scale;
-  color.g += u_specularColor.g * pow(pbr.g, smoothing) * scale;
-  color.b += u_specularColor.b * pow(pbr.b, smoothing) * scale;
+  color.r += u_specularColor.r * min(pow(pbr.r, smoothing), 1.0) * scale;
+  color.g += u_specularColor.g * min(pow(pbr.g, smoothing), 1.0) * scale;
+  color.b += u_specularColor.b * min(pow(pbr.b, smoothing), 1.0) * scale;
   //Lubos END
   color *= NdotL * lightProjection;
   color *= lightFalloff;
