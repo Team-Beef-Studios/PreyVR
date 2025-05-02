@@ -1409,6 +1409,11 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 
 	savegame.ReadBuildNumber();
 
+	//Lubos: do not load incompatible save game
+	if (savegame.GetBuildNumber() != BUILD_NUMBER) {
+		return false;
+	}
+
 	// HUMANHEAD pdm: Support for level appending
 #if DEATHWALK_AUTOLOAD
 	savegame.ReadBool( bShouldAppend );
