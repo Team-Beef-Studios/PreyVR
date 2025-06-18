@@ -24,10 +24,8 @@ import android.view.WindowManager;
 import com.drbeef.externalhapticsservice.HapticServiceClient;
 import com.drbeef.externalhapticsservice.HapticsConstants;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -285,34 +283,6 @@ import java.util.Vector;
 			e.printStackTrace();
 		}
 
-		//Parse the config file for these values
-		float ss = -1.0F;
-		long msaa = 1; // default for both HMDs
-		File config = new File(saves, "preyconfig.cfg");
-		if(config.exists())
-		{
-			BufferedReader br;
-			try {
-				br = new BufferedReader(new FileReader(config));
-				String s;
-				while ((s=br.readLine())!=null) {
-					int i1 = s.indexOf("\"");
-					int i2 = s.lastIndexOf("\"");
-					if (i1 != -1 && i2 != -1) {
-						String value = s.substring(i1+1, i2);
-						if (s.contains("vr_msaa")) {
-							msaa = Long.parseLong(value);
-						} else if (s.contains("vr_supersampling")) {
-							ss = Float.parseFloat(value);
-						}
-					}
-				}
-				br.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
 		for (Pair<String, String> serviceDetail : externalHapticsServiceDetails) {
 			HapticServiceClient client = new HapticServiceClient(this, (state, desc) -> {
 				Log.v(APPLICATION, "ExternalHapticsService " + serviceDetail.second + ": " + desc);
@@ -323,7 +293,7 @@ import java.util.Vector;
 			externalHapticsServiceClients.add(client);
 		}
 
-		GLES3JNILib.onCreate( this, commandLineParams, ss, msaa );
+		GLES3JNILib.onCreate( this, commandLineParams );
 	}
 
 	private void unpack_data(String[] data) {

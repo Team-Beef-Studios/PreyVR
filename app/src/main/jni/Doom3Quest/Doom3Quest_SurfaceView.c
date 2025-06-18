@@ -81,9 +81,12 @@ PFNEGLGETSYNCATTRIBKHRPROC		eglGetSyncAttribKHR;
 const int CPU_LEVEL			= 4;
 const int GPU_LEVEL			= 4;
 
-//Passed in from the Java code
 int NUM_MULTI_SAMPLES	= 1;
-float SS_MULTIPLIER    = 1.0f;
+float SS_MULTIPLIER    = 1.3f; //Lubos:Set it to the maximum on init, it will be updated the first frame
+
+float setMSAA = 1;
+float setSuperSamling = 1.3f;
+long renderThreadCPUTime = 0;
 
 vrClientInfo vr;
 vrClientInfo *pVRClientInfo;
@@ -1088,8 +1091,14 @@ int m_height;
 
 void Doom3Quest_GetScreenRes(int *width, int *height)
 {
-    *width = m_width;
-    *height = m_height;
+    ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
+    if (renderer) {
+        *width = renderer->FrameBuffer.Width;
+        *height = renderer->FrameBuffer.Height;
+    } else {
+        *width = m_width;
+        *height = m_height;
+    }
 }
 
 //void initialize_gl4es();
@@ -1109,10 +1118,17 @@ void VR_Init()
 	shutdown = false;
 }
 
-long renderThreadCPUTime = 0;
-
 void Doom3Quest_prepareEyeBuffer( )
 {
+	//Recreate framebuffer if needed
+	if ((fabs(SS_MULTIPLIER - setSuperSamling) > 0.01) || (fabs(NUM_MULTI_SAMPLES - setMSAA) > 0.01)) {
+		ovrRenderer_Destroy(&gAppState.Renderer);
+		SS_MULTIPLIER = setSuperSamling;
+		NUM_MULTI_SAMPLES = (int)setMSAA;
+		m_height = m_width = (int)(vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH) *  SS_MULTIPLIER);
+		ovrRenderer_Create(m_width, m_height, &gAppState.Renderer, &java);
+	}
+
 	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer);
@@ -1259,8 +1275,15 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling)
 {
+	//Inform GL thread about required framebuffer parameters.
+	if (Doom3Quest_useScreenLayer()) {
+		supersampling = 1.3f;
+	}
+	setMSAA = msaa;
+	setSuperSamling = supersampling;
+
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 
@@ -1579,7 +1602,7 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
 }
 
 JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * env, jclass activityClass, jobject activity,
-																	   jstring commandLineParams, jfloat ss, jlong msaa)
+																	   jstring commandLineParams)
 {
 	ALOGV( "    GLES3JNILib::onCreate()" );
 
@@ -1598,16 +1621,6 @@ JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * e
 	ALOGV("Command line %s", cmdLine);
 	argv = malloc(sizeof(char*) * 255);
 	argc = ParseCommandLine(strdup(cmdLine), argv);
-
-	if (ss != -1.0f)
-	{
-		SS_MULTIPLIER = ss;
-	}
-
-	if (msaa != -1)
-	{
-		NUM_MULTI_SAMPLES = msaa;
-	}
 
 	java.ActivityObject = (*env)->NewGlobalRef( env, activity );
 }
