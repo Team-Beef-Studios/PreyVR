@@ -80,6 +80,7 @@ protected:	// HUMANHEAD
 	const idMaterial *	dvMaterial;			// material to take the double vision screen shot
 	const idMaterial *	scratchMaterial;	// HUMANHEAD bjk
 	const idMaterial *	hurtMaterial;		// HUMANHEAD bjk
+	const idMaterial *	fxMaterial;			// Lubos
 
 	int					kickFinishTime;		// view kick will be stopped at this time
 	idAngles			kickAngles;	

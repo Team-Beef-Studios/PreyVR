@@ -419,7 +419,7 @@ public:
 	idImage *			borderClampImage;			// white inside, black outside
 
 	idImage*			hudImage;
-	idImage*			pdaImage;
+	idImage*			fxImage;
 
 	//--------------------------------------------------------
 
