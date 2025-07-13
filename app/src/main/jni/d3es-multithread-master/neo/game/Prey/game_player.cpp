@@ -1093,16 +1093,7 @@ void hhPlayer::DrawHUD( idUserInterface *_hud ) {
 			UpdateCrosshairs();
 
 			//Lubos BEGIN
-			if (game->isVR && !InVehicle() && weapon.IsValid() && !IsType(hhArtificialPlayer::Type) && renderView) {
-				idVec3 worldPos = weapon->GetEyeTraceInfo().endpos;
-				idVec3 screenPos = hhUtils::ProjectOntoScreen(worldPos, *renderView);
-				float scale = 250.0f / idMath::ClampFloat(250, 10000, screenPos.z);
-				pVRClientInfo->uiOffset[0] = screenPos.x - SCREEN_WIDTH / 2.0f * scale;
-				pVRClientInfo->uiOffset[1] = screenPos.y - SCREEN_HEIGHT / 2.0f * scale;
-				pVRClientInfo->uiScale[0] = scale;
-				pVRClientInfo->uiScale[1] = scale;
-				cursor->Redraw( gameLocal.realClientTime );
-			} else {
+			if (!game->isVR) {
 				cursor->Redraw( gameLocal.realClientTime );
 			}
 			//Lubos END
