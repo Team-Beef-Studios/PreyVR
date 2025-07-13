@@ -21,6 +21,7 @@ idPlayerView::idPlayerView() {
 	dvMaterial = declManager->FindMaterial( "textures/decals/painview" );
 	scratchMaterial = declManager->FindMaterial( "_scratch" );
 	hurtMaterial = declManager->FindMaterial( "textures/decals/hurtview" );
+	fxMaterial = declManager->FindMaterial( "_fxImage" );
 //	tunnelMaterial = declManager->FindMaterial( "textures/decals/tunnel" );			// HUMANHEAD pdm: not used
 //	armorMaterial = declManager->FindMaterial( "armorViewEffect" );					// HUMANHEAD pdm: not used
 //	berserkMaterial = declManager->FindMaterial( "textures/decals/berserk" );		// HUMANHEAD pdm: not used
