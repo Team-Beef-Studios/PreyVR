@@ -26,10 +26,12 @@ const int IMPULSE_DELAY = 150;
 		}
 
 		renderSystem->LogViewRender(v);
+		renderSystem->DirectFrameBufferStart(); //Lubos
 	}
 
 	void RENDER_DEMO_VIEWRENDER_END(void) {
 		renderSystem->LogViewRender(NULL);
+		renderSystem->DirectFrameBufferEnd(); //Lubos
 	}
 #endif
 //HUMANHEAD END
@@ -711,12 +713,6 @@ void hhPlayerView::ApplyLetterBox(const renderView_t *view) {
 //	HUMANHEAD pdm
 //------------------------------------------------------
 void hhPlayerView::MotionBlur(int mbTime, float severity, idVec3 &direction) {
-//Lubos BEGIN
-	if ( game->isVR ) {
-		return;
-	}
-//Lubos END
-
 	mbTotalTime = mbTime;
 	mbFinishTime = gameLocal.time + mbTotalTime;
 	mbAmplitude = severity;
