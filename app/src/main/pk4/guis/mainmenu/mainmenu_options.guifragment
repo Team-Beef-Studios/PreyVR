@@ -785,7 +785,7 @@
 								textaligny	0
 								textscale	0.33
 								shadow		1
-								text		"PBR shader"
+								text		"Enhanced PBR shader"
 							}
 							choiceDef OVA_Choice_ColorScheme {
 								rect		200, 0, 200, 25
@@ -801,8 +801,37 @@
 							}
 						}
 
+						buttonDef OVA_Glow {
+							rect			10, 220, 400, 25
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+
+							windowDef OVA_Title_Glow {
+								rect		0, 0, 200, 25
+								forecolor	STATIC_FORECOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"Bloom effect"
+							}
+							choiceDef OVA_Choice_Glow {
+								rect		200, 0, 200, 25
+								forecolor	EDITABLE_FORECOLOR_COMMA
+								hovercolor	EDITABLE_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								choices		"On;Off"
+								cvar		"r_skipBloomFX"
+								choiceType	0
+							}
+						}
+
 						buttonDef OVA_Supersampling {
-							rect			10, 220, 400, 50
+							rect			10, 250, 400, 50
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
@@ -832,7 +861,7 @@
 						}
 
 						buttonDef OVA_MSAA {
-							rect			10, 250, 400, 50
+							rect			10, 280, 400, 50
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"

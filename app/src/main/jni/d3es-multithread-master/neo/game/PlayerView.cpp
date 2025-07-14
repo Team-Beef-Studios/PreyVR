@@ -20,6 +20,7 @@ idPlayerView::idPlayerView() {
 	player = NULL;
 	dvMaterial = declManager->FindMaterial( "textures/decals/painview" );
 	scratchMaterial = declManager->FindMaterial( "_scratch" );
+	scratch2Material = declManager->FindMaterial( "_scratch2" );
 	hurtMaterial = declManager->FindMaterial( "textures/decals/hurtview" );
 	fxMaterial = declManager->FindMaterial( "_fxImage" );
 //	tunnelMaterial = declManager->FindMaterial( "textures/decals/tunnel" );			// HUMANHEAD pdm: not used

@@ -28,12 +28,15 @@ public:
 	// HUMANHEAD END
 
 protected:
-	virtual void		SingleView(idUserInterface *hud, const renderView_t *view);
+	virtual void		SingleView(idUserInterface *hud, renderView_t *view);
 
 	// HUMANHEAD pdm
-	void				MotionBlurVision(idUserInterface *hud, const renderView_t *view);
-	void				ApplyLetterBox(const renderView_t *view);
-	void				SpiritVision( idUserInterface *hud, const renderView_t *view );
+	void				MotionBlurVision(idUserInterface *hud, renderView_t *view);
+	void				ApplyLetterBox(renderView_t *view);
+	void				SpiritVision( idUserInterface *hud, renderView_t *view );
+
+	// Lubos
+	void				BloomVision(idUserInterface *hud, renderView_t *view);
 
 protected:
 	bool				bLetterBox;				// HUMANHEAD pdm: whether we are in letterbox mode
