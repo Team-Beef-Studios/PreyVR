@@ -2368,6 +2368,17 @@ int RB_GLSL_DrawShaderPasses(drawSurf_t** drawSurfs, int numDrawSurfs) {
 			continue;
 		}
 
+		//Lubos BEGIN
+		if (backEnd.viewDef->renderView.bloomFXPass) {
+			idStr texture(drawSurfs[i]->material->ImageName());
+			if (texture.CmpPrefix("textures/particles/") == 0) {
+				continue;
+			} else if (texture.CmpPrefix("models/mapobjects/lota/shrub") == 0) {
+				continue;
+			}
+		}
+		//Lubos END
+
 		if ( backEnd.viewDef->isXraySubview && drawSurfs[i]->space->entityDef ) {
 			if ( drawSurfs[i]->space->entityDef->parms.xrayIndex != 2 ) {
 				continue;

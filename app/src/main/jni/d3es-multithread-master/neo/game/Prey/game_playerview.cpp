@@ -7,6 +7,8 @@
 #define LETTERBOX_HEIGHT_TOP	50
 #define LETTERBOX_HEIGHT_BOTTOM	50
 
+#define CLIP(a) ((a)<0?0:(a)>1?1:(a))
+
 const int IMPULSE_DELAY = 150;
 
 //HUMANHEAD rww - render demo madness
@@ -523,7 +525,7 @@ void Overlay(const idMaterial *material) {
 //------------------------------------------------------
 // SingleView
 //------------------------------------------------------
-void hhPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) {
+void hhPlayerView::SingleView( idUserInterface *hud, renderView_t *view ) {
 	// normal rendering
 
 	if ( !view ) {
@@ -605,6 +607,12 @@ void hhPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, mtr );
 		}
 	}
+
+	//Lubos BEGIN
+	if (cvarSystem->GetCVarInteger("r_skipBloomFX") == 0) {
+		BloomVision(hud, view);
+	}
+	//Lubos END
 }
 
 // Hermite()
@@ -625,7 +633,7 @@ float Hermite(float t, float N1, float N2, float S1, float S2) {
 //	HUMANHEAD pdm
 //------------------------------------------------------
 
-void hhPlayerView::MotionBlurVision(idUserInterface *hud, const renderView_t *view) {
+void hhPlayerView::MotionBlurVision(idUserInterface *hud, renderView_t *view) {
 	if ( !g_doubleVision.GetBool() ) {
 		SingleView( hud, view );
 		return;
@@ -663,7 +671,6 @@ void hhPlayerView::MotionBlurVision(idUserInterface *hud, const renderView_t *vi
 		xshift = blurfactor * scale * mbDirection.x * alpha * mbAmplitude;
 		yshift = blurfactor * scale * mbDirection.y * alpha * mbAmplitude;
 
-		#define CLIP(a) ((a)<0?0:(a)>1?1:(a))
 		renderSystem->SetColor4( 1,1,1, index==0 ? 1.0f : 0.2f );
 		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
 			CLIP(xshift), CLIP(1+yshift), CLIP(1+xshift), CLIP(yshift), scratchMaterial ); // clipped
@@ -675,7 +682,7 @@ void hhPlayerView::MotionBlurVision(idUserInterface *hud, const renderView_t *vi
 //	HUMANHEAD cjr
 //------------------------------------------------------
 
-void hhPlayerView::SpiritVision( idUserInterface *hud, const renderView_t *view ) {
+void hhPlayerView::SpiritVision( idUserInterface *hud, renderView_t *view ) {
 	int oldTime = voTotalTime;
 	const idMaterial *oldMaterial = viewOverlayMaterial;
 
@@ -700,7 +707,7 @@ void hhPlayerView::SpiritVision( idUserInterface *hud, const renderView_t *view 
 // ApplyLetterbox
 //	HUMANHEAD pdm
 //------------------------------------------------------
-void hhPlayerView::ApplyLetterBox(const renderView_t *view) {
+void hhPlayerView::ApplyLetterBox(renderView_t *view) {
 	if (bLetterBox) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 		renderSystem->DrawStretchPic(0, 0, 640, LETTERBOX_HEIGHT_TOP, 0, 0, 1, 1, letterboxMaterial);
@@ -728,10 +735,50 @@ void hhPlayerView::SetLetterBox(bool on) {
 }
 
 //------------------------------------------------------
+// BloomVision
+//	Lubos
+//------------------------------------------------------
+void hhPlayerView::BloomVision(idUserInterface *hud, renderView_t *view) {
+	// Prepare render pass
+	int bloom = cvarSystem->GetCVarInteger("r_skipBloomFX");
+	cvarSystem->SetCVarInteger("r_skipBloomFX", 1);
+	bool mono = view->forceMono;
+	view->bloomFXPass = true;
+	view->forceMono = true;
+
+	// Render into texture
+	RENDER_DEMO_VIEWRENDER(view, this);
+	renderSystem->CropRenderSize( 512, 256, true );
+	SingleView( hud, view );
+	renderSystem->CaptureRenderToImage( "_scratch2" );
+	renderSystem->UnCrop();
+	RENDER_DEMO_VIEWRENDER_END();
+
+	// Restore previous render state
+	cvarSystem->SetCVarInteger("r_skipBloomFX", bloom);
+	view->bloomFXPass = false;
+	view->forceMono = mono;
+
+	// Render texture on the screen
+	int range = 3;
+	float step = 0.005f;
+	float intensity = 0.05f;
+	for (int x = -range; x <= range; x++) {
+		for (int y = -range; y <= range; y++) {
+			renderSystem->SetColor4( intensity, intensity, intensity, 0.25f );
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+										  CLIP(x * step), CLIP(1 + y * step),
+										  CLIP(1 + x * step), CLIP(y * step),
+										  scratch2Material );
+		}
+	}
+}
+
+//------------------------------------------------------
 // RenderPlayerView
 //------------------------------------------------------
 void hhPlayerView::RenderPlayerView( idUserInterface *hud ) {
-	const renderView_t *view = player->GetRenderView();
+	renderView_t *view = player->GetRenderView();
 
 	if ( g_skipViewEffects.GetBool() ) {
 		SingleView( hud, view );

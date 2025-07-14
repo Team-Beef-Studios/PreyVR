@@ -79,6 +79,7 @@ protected:	// HUMANHEAD
 	int					dvFinishTime;		// double vision will be stopped at this time
 	const idMaterial *	dvMaterial;			// material to take the double vision screen shot
 	const idMaterial *	scratchMaterial;	// HUMANHEAD bjk
+	const idMaterial *	scratch2Material;	// Lubos
 	const idMaterial *	hurtMaterial;		// HUMANHEAD bjk
 	const idMaterial *	fxMaterial;			// Lubos
 

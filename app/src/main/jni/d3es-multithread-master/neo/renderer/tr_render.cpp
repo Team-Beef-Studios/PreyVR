@@ -73,6 +73,12 @@ void RB_DrawElementsWithCounters( const drawSurf_t *surf ) {
 			glStateUpdated = true;
 		}
 
+		//custom blending for visual effects
+		if(texture.Cmp("_scratch2") == 0) {
+			GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE);
+			glStateUpdated = true;
+		}
+
 		//detect credits
 		static int frameIndex = -1;
 		if (frameIndex != tr.frameCount) {
