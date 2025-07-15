@@ -1048,7 +1048,7 @@
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
-							visible			("gui::powerfulHMD" == 2)
+							visible			("gui::powerfulHMD" > 0)
 
 							windowDef OVR_Title_RefreshRate {
 								rect		0, 0, 200, 25
