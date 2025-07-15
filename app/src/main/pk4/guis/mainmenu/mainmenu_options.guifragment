@@ -801,37 +801,8 @@
 							}
 						}
 
-						buttonDef OVA_Glow {
-							rect			10, 220, 400, 25
-							leftMat			"guis/assets/menu/textbar_corner.tga"
-							middleMat		"guis/assets/menu/textbarstrip.tga"
-							rightMat		"guis/assets/menu/textbar_invcorner.tga"
-
-							windowDef OVA_Title_Glow {
-								rect		0, 0, 200, 25
-								forecolor	STATIC_FORECOLOR_COMMA
-								textalign	1
-								textaligny	0
-								textscale	0.33
-								shadow		1
-								text		"Bloom effect"
-							}
-							choiceDef OVA_Choice_Glow {
-								rect		200, 0, 200, 25
-								forecolor	EDITABLE_FORECOLOR_COMMA
-								hovercolor	EDITABLE_HOVERCOLOR_COMMA
-								textalign	1
-								textaligny	0
-								textscale	0.33
-								shadow		1
-								choices		"On;Off"
-								cvar		"r_skipBloomFX"
-								choiceType	0
-							}
-						}
-
 						buttonDef OVA_Supersampling {
-							rect			10, 250, 400, 50
+							rect			10, 220, 400, 50
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
@@ -861,7 +832,7 @@
 						}
 
 						buttonDef OVA_MSAA {
-							rect			10, 280, 400, 50
+							rect			10, 250, 400, 50
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
@@ -891,12 +862,50 @@
 							}
 						}
 
-						buttonDef OVA_Shadows {
-							rect			10, 280, 400, 50
+						buttonDef OVA_Glow {
+							rect			10, 280, 480, 25
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
-							visible			("gui::powerfulHMD" != 0)
+
+							windowDef OVA_Title_Glow {
+								rect		0, 0, 200, 25
+								forecolor	STATIC_FORECOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"Bloom effect"
+							}
+							choiceDef OVA_Choice_Glow {
+								rect		200, 0, 200, 25
+								forecolor	EDITABLE_FORECOLOR_COMMA
+								hovercolor	EDITABLE_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								choices		"On;Off"
+								cvar		"r_skipBloomFX"
+								choiceType	0
+							}
+							windowDef OVA_Warning_Glow {
+								rect            250, 0, 200, 25
+								forecolor       1, 0.25, 0.25, 0.9
+								textaligny      0
+								textscale       0.33
+								shadow          1
+								text            "Laggy on most HMDs!"
+								visible         ("gui::powerfulHMD" != 2)
+							}
+						}
+
+						buttonDef OVA_Shadows {
+							rect			10, 310, 480, 50
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			1
 
 							windowDef OVA_Title_Shadows {
 								rect		0, 0, 200, 25
@@ -920,13 +929,13 @@
 								choiceType	0
 							}
 							windowDef OVA_Warning_Shadows {
-								rect		70, 20, 200, 25
-								forecolor	1, 0.25, 0.25, 0.9
-								textaligny	0
-								textscale	0.25
-								shadow		1
-								text		"Shadows cause frame drops!"
-								visible		("gui::powerfulHMD" != 2)
+								rect            250, 0, 200, 25
+								forecolor       1, 0.25, 0.25, 0.9
+								textaligny      0
+								textscale       0.33
+								shadow          1
+								text            "Laggy on most HMDs!"
+								visible         ("gui::powerfulHMD" != 2)
 							}
 						}
 					}
