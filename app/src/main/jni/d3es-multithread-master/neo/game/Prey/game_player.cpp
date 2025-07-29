@@ -7,6 +7,10 @@
 
 #define DAMAGE_INDICATOR_TIME		1100		// Update this in hud_damageindicator.guifragment too
 
+idCVar vr_weaponWheel( "vr_weaponWheel", "0", CVAR_BOOL, "Information if weapon wheel is shown right now" );
+idCVar vr_weaponWheelCurrent( "vr_weaponWheelCurrent", "0", CVAR_INTEGER, "Current weapon in the weapon wheel" );
+vec3_t vr_weaponWheelDir;
+
 const idEventDef EV_PlayWeaponAnim( "playWeaponAnim", "sd" );
 const idEventDef EV_RechargeHealth( "<rechargehealth>", NULL );
 const idEventDef EV_RechargeRifleAmmo( "<rechargeRifleAmmo>", NULL );
@@ -1016,6 +1020,106 @@ void hhPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 }
 
+void hhPlayer::DrawWeaponWheel(idUserInterface *_hud) {
+    //Update visibility
+    _hud->SetStateInt("weapon_wheel", vr_weaponWheel.GetBool() ? 1 : 0);
+    if (!vr_weaponWheel.GetBool() || InVehicle() || IsSpiritOrDeathwalking()) {
+        return;
+    }
+
+    //Calculate hand movement diff
+    vec3_t diff;
+    diff[PITCH] = vr_weaponWheelDir[PITCH] - pVRClientInfo->weaponangles_temp[PITCH] + pVRClientInfo->hmdorientation_temp[PITCH];
+    diff[YAW] = vr_weaponWheelDir[YAW] - pVRClientInfo->weaponangles_temp[YAW] + pVRClientInfo->hmdorientation_temp[YAW];
+    diff[ROLL] = vr_weaponWheelDir[ROLL] - pVRClientInfo->weaponangles_temp[ROLL] + pVRClientInfo->hmdorientation_temp[ROLL];
+    while (diff[YAW] > 180) diff[YAW] -= 360;
+    while (diff[YAW] < -180) diff[YAW] += 360;
+    float dir = RAD2DEG(atan2(diff[PITCH], diff[YAW]));
+    gameLocal.Warning("Weapon wheel hand dir %d", (int)dir);
+
+    //Selecting weapons
+    float dst = sqrt(diff[PITCH] * diff[PITCH] + diff[YAW] * diff[YAW]);
+    if (dst > 15) {
+        if (dir > 170) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_CRAWLER);
+        else if (dir > 120) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_WRENCH);
+        else if (dir > 70) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_RIFLE);
+        else if (dir > 20) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_HIDERWEAPON);
+        else if (dir > -30) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_ROCKETLAUNCHER);
+        else if (dir > -80) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_AUTOCANNON);
+        else if (dir > -140) vr_weaponWheelCurrent.SetInteger(HH_WEAPON_SOULSTRIPPER);
+        else vr_weaponWheelCurrent.SetInteger(HH_WEAPON_CRAWLER);
+    }
+
+    //Define alpha values
+    int currentWeapon = vr_weaponWheelCurrent.GetInteger();
+    float alphaMax = IsWeaponReady(currentWeapon) ? 0.6f : 0.0f;
+    float alphaEasy = 0.4f;
+    float alphaBase = 0.1f;
+
+    //Default value based on the weapon availability
+    static float alpha[MAX_WEAPONS] = {};
+    alpha[0] = alphaEasy;
+    alpha[1] = IsWeaponReady(HH_WEAPON_WRENCH) ? alphaEasy : alphaBase;
+    alpha[2] = IsWeaponReady(HH_WEAPON_RIFLE) ? alphaEasy : alphaBase;
+    alpha[3] = IsWeaponReady(HH_WEAPON_CRAWLER) ? alphaEasy : alphaBase;
+    alpha[4] = IsWeaponReady(HH_WEAPON_AUTOCANNON) ? alphaEasy : alphaBase;
+    alpha[5] = IsWeaponReady(HH_WEAPON_HIDERWEAPON) ? alphaEasy : alphaBase;
+    alpha[6] = IsWeaponReady(HH_WEAPON_ROCKETLAUNCHER) ? alphaEasy : alphaBase;
+    alpha[7] = IsWeaponReady(HH_WEAPON_SOULSTRIPPER) ? alphaEasy : alphaBase;
+
+    //Highlight selected weapon
+    alpha[0] += currentWeapon == 0 ? alphaMax : 0;
+    alpha[1] += currentWeapon == HH_WEAPON_WRENCH ? alphaMax : 0;
+    alpha[2] += currentWeapon == HH_WEAPON_RIFLE ? alphaMax : 0;
+    alpha[3] += currentWeapon == HH_WEAPON_CRAWLER ? alphaMax : 0;
+    alpha[4] += currentWeapon == HH_WEAPON_AUTOCANNON ? alphaMax : 0;
+    alpha[5] += currentWeapon == HH_WEAPON_HIDERWEAPON ? alphaMax : 0;
+    alpha[6] += currentWeapon == HH_WEAPON_ROCKETLAUNCHER ? alphaMax : 0;
+    alpha[7] += currentWeapon == HH_WEAPON_SOULSTRIPPER ? alphaMax : 0;
+
+    //Cross-fading
+    static float finalAlpha[MAX_WEAPONS] = {};
+    for (int i = 0; i < MAX_WEAPONS; i++) {
+        finalAlpha[i] = finalAlpha[i] * 0.8f + alpha[i] * 0.2f;
+    }
+
+    //Calculate cursor
+    float x = 100 + 100 * diff[YAW] / 30.0f;
+    float y = 80 - 80 * diff[PITCH] / 30.0f;
+    float glow = fmax(0.5f - dst / 50.0f, 0.0f);
+
+    //Apply values
+    _hud->SetStateFloat("weapon_wheel_glow_x", x);
+    _hud->SetStateFloat("weapon_wheel_glow_y", y);
+    _hud->SetStateFloat("weapon_wheel_glow_alpha", glow);
+    _hud->SetStateFloat("weapon_wheel0", finalAlpha[0]);
+    _hud->SetStateFloat("weapon_wheel1", finalAlpha[1]);
+    _hud->SetStateFloat("weapon_wheel2", finalAlpha[2]);
+    _hud->SetStateFloat("weapon_wheel3", finalAlpha[3]);
+    _hud->SetStateFloat("weapon_wheel4", finalAlpha[4]);
+    _hud->SetStateFloat("weapon_wheel5", finalAlpha[5]);
+    _hud->SetStateFloat("weapon_wheel6", finalAlpha[6]);
+    _hud->SetStateFloat("weapon_wheel7", finalAlpha[7]);
+}
+
+bool hhPlayer::IsWeaponReady( int weapon )
+{
+    switch (weapon) {
+        case HH_WEAPON_WRENCH: weapon = 1; break;
+        case HH_WEAPON_RIFLE: weapon = 2; break;
+        case HH_WEAPON_CRAWLER: weapon = 3; break;
+        case HH_WEAPON_AUTOCANNON: weapon = 5; break;
+        case HH_WEAPON_HIDERWEAPON: weapon = 6; break;
+        case HH_WEAPON_ROCKETLAUNCHER: weapon = 7; break;
+        case HH_WEAPON_SOULSTRIPPER: weapon = 4; break;
+    }
+    if ((weapon > 0) && (inventory.weapons & (1 << weapon))) {
+        const char* weap = spawnArgs.GetString(va( "def_weapon%d", weapon));
+        return inventory.HasAmmo(weap);
+    }
+    return false;
+}
+
 /*
 ===============
 hhPlayer::DrawHUD
@@ -1024,6 +1128,8 @@ hhPlayer::DrawHUD
 ===============
 */
 void hhPlayer::DrawHUD( idUserInterface *_hud ) {
+
+	DrawWeaponWheel( _hud );
 
 	if (guiOverlay) {
 		guiOverlay->Redraw(gameLocal.realClientTime);
@@ -2954,6 +3060,49 @@ void hhPlayer::PerformImpulse( int impulse ) {
 				}
 			}
 			break;
+		//Lubos BEGIN
+		case IMPULSE_23: {
+			if (InVehicle() || IsSpiritOrDeathwalking()) {
+				return;
+			}
+			gameLocal.Printf("Show weapon wheel");
+			switch (currentWeapon) {
+				case 1: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_WRENCH); break;
+				case 2: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_RIFLE); break;
+				case 3: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_CRAWLER); break;
+				case 4: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_SOULSTRIPPER); break;
+				case 5: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_AUTOCANNON); break;
+				case 6: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_HIDERWEAPON); break;
+				case 7: vr_weaponWheelCurrent.SetInteger(HH_WEAPON_ROCKETLAUNCHER); break;
+			}
+			vr_weaponWheelDir[PITCH] = pVRClientInfo->weaponangles_temp[PITCH] - pVRClientInfo->hmdorientation_temp[PITCH];
+			vr_weaponWheelDir[YAW] = pVRClientInfo->weaponangles_temp[YAW] - pVRClientInfo->hmdorientation_temp[YAW];
+			vr_weaponWheelDir[ROLL] = pVRClientInfo->weaponangles_temp[ROLL] - pVRClientInfo->hmdorientation_temp[ROLL];
+			vr_weaponWheel.SetBool(true);
+			break;
+		}
+		case IMPULSE_24: {
+			if (InVehicle() || IsSpiritOrDeathwalking()) {
+				return;
+			}
+			gameLocal.Printf("Hide weapon wheel");
+			int newWeapon = 0;
+			switch (vr_weaponWheelCurrent.GetInteger()) {
+				case HH_WEAPON_WRENCH: newWeapon = 1; break;
+				case HH_WEAPON_RIFLE: newWeapon = 2; break;
+				case HH_WEAPON_CRAWLER: newWeapon = 3; break;
+				case HH_WEAPON_AUTOCANNON: newWeapon = 5; break;
+				case HH_WEAPON_HIDERWEAPON: newWeapon = 6; break;
+				case HH_WEAPON_ROCKETLAUNCHER: newWeapon = 7; break;
+				case HH_WEAPON_SOULSTRIPPER: newWeapon = 4; break;
+			}
+			if (IsWeaponReady(vr_weaponWheelCurrent.GetInteger())) {
+				SelectWeapon(newWeapon, false);
+			}
+			vr_weaponWheel.SetBool(false);
+			break;
+		}
+		//Lubos END
 		case IMPULSE_25:
 			// Throw grenade
 			if ( weaponFlags != 0 && !ActiveGui()) { // mdl:  Disable if all weapons are disabled

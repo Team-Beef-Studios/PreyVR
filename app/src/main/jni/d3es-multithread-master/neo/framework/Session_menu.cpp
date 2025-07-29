@@ -990,6 +990,19 @@ void idSessionLocal::HandleMainMenuCommands(const char *menuCommand)
 			continue;
 		}
 
+		if ( !idStr::Icmp( cmd, "cheat" ) ) {
+			if ( args.Argc() - icmd >= 1 ) {
+				idStr cheat = args.Argv(icmd++);
+				if ( args.Argc() - icmd >= 1 ) {
+					idStr param = args.Argv(icmd++);
+					cmdSystem->BufferCommandText(CMD_EXEC_NOW, cheat + " " + param);
+				} else {
+					cmdSystem->BufferCommandText(CMD_EXEC_NOW, cheat);
+				}
+			}
+			continue;
+		}
+
 		if (!idStr::Icmp(cmd, "play")) {
 			if (args.Argc() - icmd >= 1) {
 				idStr snd = args.Argv(icmd++);
