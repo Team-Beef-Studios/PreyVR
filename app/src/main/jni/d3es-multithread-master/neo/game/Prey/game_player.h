@@ -417,6 +417,11 @@ public:
 
 	virtual void		Show();
 
+	//Lubos BEGIN
+	void				DrawWeaponWheel( idUserInterface *hud );
+	bool				IsWeaponReady( int weapon );
+	//Lubos END
+
 protected:
 	idUserInterface *	guiOverlay;
 	idClipModel			thirdPersonCameraClipBounds;

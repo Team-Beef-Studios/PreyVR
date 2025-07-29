@@ -161,29 +161,39 @@ void HandleInput_Default(int controlscheme, int switchsticks)
 
 			//Weapon Chooser
 			static bool itemSwitched = false;
+			bool weaponWheel = (Android_GetCVarInteger("vr_weaponToggle") == 1) && !pVRClientInfo->vehicleMode;
 			if (between(-0.2f, pPrimaryJoystick.x, 0.2f) &&
-				(between(0.5f, pPrimaryJoystick.y, 1.0f) ||
-				 between(-1.0f, pPrimaryJoystick.y, -0.5f)))
+				(between(0.8f, pPrimaryJoystick.y, 1.0f) ||
+				 between(-1.0f, pPrimaryJoystick.y, -0.8f)))
 			{
 				pVRClientInfo->weaponZooming = between(0.5f, pPrimaryJoystick.y, 1.0f) ? 1 : -1; //Lubos
 				if (!itemSwitched) {
-					if (between(0.5f, pPrimaryJoystick.y, 1.0f))
+					if (weaponWheel)
 					{
-					    //Previous Weapon
-                        Android_SetImpulse(UB_IMPULSE15);
+						//Show weapon wheel
+						Android_SetImpulse(UB_IMPULSE23);
+					}
+					else if (between(0.8f, pPrimaryJoystick.y, 1.0f))
+					{
+						//Previous Weapon
+						Android_SetImpulse(UB_IMPULSE15);
 					}
 					else
 					{
-					    //Next Weapon
-                        Android_SetImpulse(UB_IMPULSE14);
+						//Next Weapon
+						Android_SetImpulse(UB_IMPULSE14);
 					}
 					itemSwitched = true;
 				}
-			} else if (fabsf(pPrimaryJoystick.y) < 0.4f) {//Lubos
+			} else if (between(-0.2f, pPrimaryJoystick.y, 0.2f)) {
+				if (itemSwitched && weaponWheel) {
+					//Hide weapon wheel
+					Android_SetImpulse(UB_IMPULSE24);
+				}
 				pVRClientInfo->weaponZooming = 0; //Lubos
 				itemSwitched = false;
 			}
-        }
+		}
 
         {
             //Apply a filter and quadratic scaler so small movements are easier to make
@@ -226,10 +236,7 @@ void HandleInput_Default(int controlscheme, int switchsticks)
                     (offhandButtonsNew & offButton2)) {
                     if ((offhandButtonsNew & ovrButton_Trigger) &&
                     (offhandButtonsNew & ovrButton_GripTrigger)) {
-						if (weaponButtonsNew & ovrButton_GripTrigger)
-							Android_SetCommand("noclip"); //noclip cheat
-						else
-							Android_SetCommand("god"); //god cheat
+						Android_SetCommand("god"); //god cheat
                     } else {
                         Android_SetImpulse(UB_IMPULSE25); //throw granade
                     }

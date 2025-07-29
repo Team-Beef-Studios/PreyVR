@@ -408,6 +408,37 @@
 							choiceType	1
 						}
 					}
+
+					buttonDef OA_Weapon {
+						rect			10, 310, 400, 50
+						leftMat			"guis/assets/menu/textbar_corner.tga"
+						middleMat		"guis/assets/menu/textbarstrip.tga"
+						rightMat		"guis/assets/menu/textbar_invcorner.tga"
+
+						windowDef OAT_Weapon {
+							rect		0, 0, 200, 25
+							text		"Weapon toggle"
+							textalign	1
+							textaligny	0
+							textscale	0.33
+							shadow		1
+							forecolor	STATIC_FORECOLOR_COMMA
+						}
+
+						choiceDef OAC_Weapon {
+							rect		200, 0, 200, 25
+							textscale	0.33
+							textalign	1
+							textaligny	0
+							shadow		1
+							forecolor	EDITABLE_FORECOLOR_COMMA
+							hovercolor	EDITABLE_HOVERCOLOR_COMMA
+							choices		"Up/Down;Weapon wheel"
+							values		"0;1"
+							cvar		"vr_weaponToggle"
+							choiceType	1
+						}
+					}
 				}
 			}
 
@@ -1071,6 +1102,115 @@
 								values		"72;90"
 								cvar		"vr_refreshrate"
 								choiceType	1
+							}
+						}
+					}
+				}
+			}
+
+			tabDef Options_Cheats {
+				rect			0, 0, 570, 370
+				backcolor		0, 0, 0, 0
+				forecolor		0, 0, 0, 0
+				hovercolor		0, 0, 0, 0
+				activeColor		0, 0, 0, 0
+				hoverMatColor	0, 0, 0, 0
+				text			"Cheats"
+				seperatorLines	1, 1, 1, 1
+				seperatorMargin	0
+
+				onTabActivate {
+					set "cmd" "play guisounds_menu_tabflip" ;
+				}
+
+				windowDef OVR_Cheats {
+					rect		101, 1, 468, 368
+					backcolor	TAB_PAGE_BACKCOLOR_COMMA
+					background	"guis/assets/menu/fadebg_top.tga"
+
+					windowDef OVR_Page {
+						rect		25, 17, 420, 350
+
+						buttonDef OVR_Headings {
+							rect		0, 0, 420, 30
+							forecolor	HEADING_FORECOLOR_DARK_COMMA
+							leftMat		"guis/assets/menu/text_titlebar_corner.tga"
+							middleMat	"guis/assets/menu/text_titlebarstrip.tga"
+							font		"fonts/menu"
+							text		"Cheats"
+							textalign	1
+							textaligny	-3
+							textscale	0.45
+							shadow		1
+							noevents	1
+						}
+
+						buttonDef OVR_Cheat_GiveAll {
+							rect			10, 40, 400, 25
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			1
+
+							windowDef OVR_Title_GiveAll {
+								rect		0, 0, 200, 25
+								forecolor	SUBMENU_BOTTOMBAR_FORECOLOR_COMMA
+								hovercolor	SUBMENU_BOTTOMBAR_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"give all"
+								onAction {
+									set	"cmd" "cheat give all";
+									set "cmd" "play guisounds_menu_clickin" ;
+								}
+							}
+						}
+
+						buttonDef OVR_Cheat_GiveHealth {
+							rect			10, 70, 400, 25
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			1
+
+							windowDef OVR_Title_GiveHealth {
+								rect		0, 0, 200, 25
+								forecolor	SUBMENU_BOTTOMBAR_FORECOLOR_COMMA
+								hovercolor	SUBMENU_BOTTOMBAR_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"give health"
+								onAction {
+									set	"cmd" "cheat give health";
+									set "cmd" "play guisounds_menu_clickin" ;
+								}
+							}
+						}
+
+						buttonDef OVR_Cheat_NoClip {
+							rect			10, 100, 400, 25
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			1
+
+							windowDef OVR_Title_NoClip {
+								rect		0, 0, 200, 25
+								forecolor	SUBMENU_BOTTOMBAR_FORECOLOR_COMMA
+								hovercolor	SUBMENU_BOTTOMBAR_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"noclip"
+								onAction {
+									set	"cmd" "cheat noclip";
+									set "cmd" "play guisounds_menu_clickin" ;
+								}
 							}
 						}
 					}

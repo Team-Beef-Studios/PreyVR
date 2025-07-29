@@ -1,0 +1,70 @@
+    windowDef WeaponWheel {
+        rect		240-20, 80, 160+40, 120+40
+        matcolor	1, 1, 1, 1
+        background	"guis/assets/weapon_wheel"
+        visible ("gui::weapon_wheel" == 1)
+
+        windowDef WeaponWheelGlow {
+            rect		"gui::weapon_wheel_glow_x"-20, "gui::weapon_wheel_glow_y"-15, 40, 30
+            matcolor	1, 1, 1, "gui::weapon_wheel_glow_alpha"
+            background	"guis/assets/weapon_wheel_glow"
+            visible	1
+        }
+
+        //Rifle always on the top
+        windowDef WeapIcon2 {
+            visible		1
+            rect		100-24, 8, 48, 24
+            background	"textures/interface/icons/rifle"
+            matcolor	1, 1, 1 , "gui::weapon_wheel2"
+            visible	1
+        }
+
+        //Hand weapons on the left
+        windowDef WeapIcon1 {
+            visible		1
+            rect		16, 40, 48, 24
+            background	"textures/interface/icons/wrench"
+            matcolor	1, 1, 1 , "gui::weapon_wheel1"
+            visible	1
+        }
+        windowDef WeapIcon3 {
+            visible		1
+            rect		10, 80, 48, 24
+            background	"textures/interface/icons/sw_crawler"
+            matcolor	1, 1, 1 , "gui::weapon_wheel3"
+            visible	1
+        }
+
+        //Bio weapons on the right
+        windowDef WeapIcon5 {
+            visible		1
+            rect		136, 40, 48, 24
+            background	"textures/interface/icons/acidsprayer"
+            matcolor	1, 1, 1 , "gui::weapon_wheel5"
+            visible	1
+        }
+        windowDef WeapIcon6 {
+            visible		1
+            rect		142, 80, 48, 24
+            background	"textures/interface/icons/rocketlauncher"
+            matcolor	1, 1, 1 , "gui::weapon_wheel6"
+            visible	1
+        }
+
+        //Power weapon on the bottom
+        windowDef WeapIcon4 {
+            visible		1
+            rect		100+7, 117, 48, 24
+            background	"textures/interface/icons/autocannon"
+            matcolor	1, 1, 1 , "gui::weapon_wheel4"
+            visible	1
+        }
+        windowDef WeapIcon7 {
+            visible		1
+            rect		100-55, 117, 48, 24
+            background	"textures/interface/icons/soulstripper"
+            matcolor	1, 1, 1 , "gui::weapon_wheel7"
+            visible	1
+        }
+    }

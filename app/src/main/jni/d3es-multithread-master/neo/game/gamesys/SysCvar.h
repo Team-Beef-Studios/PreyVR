@@ -261,6 +261,8 @@ extern idCVar	g_testModelBlend;
 extern idCVar	g_exportMask;
 extern idCVar	g_flushSave;
 
+extern idCVar vr_weaponToggle; //Lubos
+
 extern idCVar	aas_test;
 extern idCVar	aas_showAreas;
 extern idCVar	aas_showPath;
