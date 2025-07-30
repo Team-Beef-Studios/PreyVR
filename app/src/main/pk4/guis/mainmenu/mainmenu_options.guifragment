@@ -826,7 +826,7 @@
 								textaligny	0
 								textscale	0.33
 								shadow		1
-								choices		"On;Off"
+								choices		"Yes;No"
 								cvar		"r_usePhong"
 								choiceType	0
 							}
@@ -916,7 +916,7 @@
 								textaligny	0
 								textscale	0.33
 								shadow		1
-								choices		"On;Off"
+								choices		"Yes;No"
 								cvar		"r_skipBloomFX"
 								choiceType	0
 							}
