@@ -96,7 +96,7 @@ void main()
 
   //Lubos: make diffuse color less present when applying PBR
   {
-    diffuseColor = diffuseColor * 0.67 + u_diffuseColor.rgb * 0.33;
+    diffuseColor = diffuseColor * 0.85 + u_diffuseColor.rgb * 0.15;
   }
 
   //PBR
@@ -140,10 +140,7 @@ void main()
   //Lubos:saturize the final color
   {
     float gray = (fragColor.r + fragColor.g + fragColor.b) / 3.0;
-    fragColor.r += (fragColor.r - gray) * 0.25;
-    fragColor.g += (fragColor.g - gray) * 0.25;
-    fragColor.b += (fragColor.b - gray) * 0.25;
-    fragColor.rgb -= vec3(gray, gray, gray) * 0.5;
+    fragColor.rgb -= vec3(gray, gray, gray) * 0.25;
     fragColor.rgb *= 0.75;
   }
 }
