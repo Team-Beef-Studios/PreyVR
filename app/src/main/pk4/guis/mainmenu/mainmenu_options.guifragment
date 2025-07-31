@@ -816,7 +816,7 @@
 								textaligny	0
 								textscale	0.33
 								shadow		1
-								text		"Enhanced PBR shader"
+								text		"PBR shader"
 							}
 							choiceDef OVA_Choice_ColorScheme {
 								rect		200, 0, 200, 25

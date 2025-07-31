@@ -2228,6 +2228,37 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, GLuint projection) {
 				GL_State(pStage->drawStateBits);
 			}
 
+			//Lubos BEGIN
+			idStr texture(surf->material->ImageName());
+			if(((texture.Find("ramp_fx") != -1) || (texture.CmpPrefix("textures/sfx/genericdissolve") == 0)) && surf->renderEntity) {
+				static int entityCount[MAX_GENTITIES];
+				static int renderCount[MAX_GENTITIES];
+				static char levelname[64] = "";
+				if (pVRClientInfo->levelname && strcmp(pVRClientInfo->levelname, levelname) != 0) {
+					memset(renderCount, 0, MAX_GENTITIES * sizeof(int));
+					strcpy(levelname, pVRClientInfo->levelname);
+				}
+
+				bool bloom = backEnd.viewDef->renderView.bloomFXPass;
+				int frame = tr.frameCount * 2 + (bloom ? 1 : 0);
+				int index = surf->renderEntity->entityNum;
+				if (renderCount[index] != frame) {
+					renderCount[index] = frame;
+					entityCount[index] = 0;
+				}
+				entityCount[index]++;
+
+				if (pVRClientInfo->levelname) {
+					if (strcmp(pVRClientInfo->levelname, "maps/game/roadhouse") == 0) {
+						qglEnable(GL_POLYGON_OFFSET_FILL);
+						qglPolygonOffset(r_offsetFactor.GetFloat(), r_offsetUnits.GetFloat() * pStage->privatePolygonOffset);
+						GL_State(GLS_DEPTHMASK | pStage->drawStateBits - GLS_DEPTHFUNC_EQUAL);
+					} else if (entityCount[index] == 1) {
+						continue;
+					}
+				}
+			} else
+			//Lubos END
 			if ( pStage->privatePolygonOffset ) {
 				// set privatePolygonOffset if necessary
 				qglEnable(GL_POLYGON_OFFSET_FILL);
@@ -2372,7 +2403,11 @@ int RB_GLSL_DrawShaderPasses(drawSurf_t** drawSurfs, int numDrawSurfs) {
 		if (backEnd.viewDef->renderView.bloomFXPass) {
 			idStr texture(drawSurfs[i]->material->ImageName());
 			if (texture.CmpPrefix("textures/particles/") == 0) {
-				continue;
+				if (texture.CmpPrefix("textures/particles/fire") == 0) {
+				} else if (texture.CmpPrefix("textures/particles/spark") == 0) {
+				} else {
+					continue;
+				}
 			} else if (texture.CmpPrefix("models/mapobjects/lota/shrub") == 0) {
 				continue;
 			}
