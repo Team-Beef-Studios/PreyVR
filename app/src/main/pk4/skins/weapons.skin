@@ -1,5 +1,5 @@
 //Lubos BEGIN
-/*skin skins/vr/crosshairDot{
+skin skins/vr/crosshairDot{
 }
 
 skin skins/vr/crosshairCircleDot{
@@ -8,7 +8,7 @@ skin skins/vr/crosshairCircleDot{
 
 skin skins/vr/crosshairCross{
 	vr/weaponsight vr/weaponsightCross
-}*/
+}
 //Lubos END
 
 skin skins/weapons/arrowdraw
