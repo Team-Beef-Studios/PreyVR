@@ -8,7 +8,7 @@
 #define DAMAGE_INDICATOR_TIME		1100		// Update this in hud_damageindicator.guifragment too
 
 //Lubos BEGIN
-idCVar vr_weaponSight( "vr_weaponSight", "3", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Lasersight\n 1 = Red dot\n 2 = Circle dot\n 3 = Crosshair\n 4 = Beam + Dot\n" );
+idCVar vr_weaponSight( "vr_weaponSight", "3", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Disabled\n 1 = Red dot\n 2 = Circle dot\n 3 = Crosshair\n 4 = Beam + Dot\n" );
 idCVar vr_weaponSightToSurface( "vr_weaponSightToSurface", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Map sight to surface. 0 = Disabled 1 = Enabled\n" );
 idCVar vr_weaponWheel( "vr_weaponWheel", "0", CVAR_BOOL, "Information if weapon wheel is shown right now" );
 idCVar vr_weaponWheelCurrent( "vr_weaponWheelCurrent", "0", CVAR_INTEGER, "Current weapon in the weapon wheel" );
@@ -1193,6 +1193,9 @@ void hhPlayer::UpdateLaserSight() {
     // check if lasersight should be hidden
     muzzleAxis = weapon->GetMuzzleAxis();
     muzzleOrigin = weapon->GetMuzzlePosition();
+    if ( pVRClientInfo ) {
+        muzzleOrigin -= idVec3(pVRClientInfo->weaponOffset[0] - 16, pVRClientInfo->weaponOffset[1], pVRClientInfo->weaponOffset[2] - 4) * muzzleAxis;
+    }
     if ( !laserSightActive ||							// Koz allow user to toggle lasersight.
          sightMode == -1 ||
          gameLocal.inCinematic ||
@@ -1258,7 +1261,7 @@ void hhPlayer::UpdateLaserSight() {
         target = start + muzzleAxis[0] * beamLength;
 
         laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_WIDTH] = g_laserSightWidth.GetFloat();
-        laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_END_Z] = beamLength; // DEFUNKT
+        //laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_LENGTH] = beamLength; // DEFUNKT
 
         if ( laserSightHandle == -1 )
         {
@@ -5322,7 +5325,7 @@ void hhPlayer::Think( void ) {
 			zoomed = false;
 		}
 	}
-	bool canAim = (currentWeapon != 1) && (currentWeapon != 3); //no wrench and crawler
+	bool canAim = (currentWeapon != 1) && (currentWeapon != 3) && !IsSpiritOrDeathwalking(); //no wrench, crawler and bow
 	laserSightActive = ( cvarSystem->GetCVarInteger( "vr_weaponSight" ) > 0 ) && !vr_weaponWheel.GetBool() && !zoomed && canAim;
 	//Lubos END
 
