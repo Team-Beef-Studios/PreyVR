@@ -42,6 +42,8 @@ public:
 	void				CheckDeferredProjectiles(void); //rww
 
 	virtual bool		CheckThirdPersonMuzzle(idVec3 &origin, idMat3 &axis); //rww
+
+	virtual const hhRenderEntity *GetSelfConst() const = 0;
 protected:
 	void				SetProjectileDict( const char* name );
 
@@ -59,7 +61,6 @@ protected:
 	virtual idMat3		DetermineAimAxis( const idVec3& muzzlePos, const idMat3& weaponAxis );
 
 	virtual hhRenderEntity *GetSelf() = 0;
-	virtual const hhRenderEntity *GetSelfConst() const = 0;
 
 protected:
 	idDict				restoredDict;

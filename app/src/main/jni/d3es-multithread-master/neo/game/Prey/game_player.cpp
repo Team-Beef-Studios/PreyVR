@@ -7,9 +7,13 @@
 
 #define DAMAGE_INDICATOR_TIME		1100		// Update this in hud_damageindicator.guifragment too
 
+//Lubos BEGIN
+idCVar vr_weaponSight( "vr_weaponSight", "3", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Lasersight\n 1 = Red dot\n 2 = Circle dot\n 3 = Crosshair\n 4 = Beam + Dot\n" );
+idCVar vr_weaponSightToSurface( "vr_weaponSightToSurface", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Map sight to surface. 0 = Disabled 1 = Enabled\n" );
 idCVar vr_weaponWheel( "vr_weaponWheel", "0", CVAR_BOOL, "Information if weapon wheel is shown right now" );
 idCVar vr_weaponWheelCurrent( "vr_weaponWheelCurrent", "0", CVAR_INTEGER, "Current weapon in the weapon wheel" );
 vec3_t vr_weaponWheelDir;
+//Lubos END
 
 const idEventDef EV_PlayWeaponAnim( "playWeaponAnim", "sd" );
 const idEventDef EV_RechargeHealth( "<rechargehealth>", NULL );
@@ -161,6 +165,14 @@ hhPlayer::hhPlayer( void ) :
 
 	//HUMANHEAD PCF rww 05/03/06 - initialize bob to 0
 	bob = 0.0f;
+
+	//Lubos BEGIN
+	laserSightHandle = -1;
+	memset( &laserSightRenderEntity, 0, sizeof( laserSightRenderEntity ) );
+	crosshairHandle = -1;
+	memset( &crosshairEntity, 0, sizeof( crosshairEntity ) );
+	lastCrosshairMode = -1;
+	//Lubos END
 }
 
 void hhPlayer::LinkScriptVariables( void ) {
@@ -412,6 +424,8 @@ void hhPlayer::Init() {
 	}
 
 	physicsObj.SetInwardGravity(-1); //rww
+
+	InitLaserSight(); //Lubos
 }
 
 /*
@@ -1118,6 +1132,246 @@ bool hhPlayer::IsWeaponReady( int weapon )
         return inventory.HasAmmo(weap);
     }
     return false;
+}
+
+void hhPlayer::InitLaserSight() {
+    laserSightHandle = -1;
+    memset( &laserSightRenderEntity, 0, sizeof( laserSightRenderEntity ) );
+    laserSightRenderEntity.hModel = renderModelManager->FindModel( "_BEAM" );
+    //laserSightRenderEntity.customShader = declManager->FindMaterial( "_white" );
+    laserSightRenderEntity.customShader = declManager->FindMaterial("vr/weaponsight/laserbeam");
+    laserSightRenderEntity.shaderParms[ SHADERPARM_RED ]	= 1.0f;
+    laserSightRenderEntity.shaderParms[ SHADERPARM_GREEN ] = 0.0f;
+    laserSightRenderEntity.shaderParms[ SHADERPARM_BLUE ]	= 0.0f;
+    laserSightRenderEntity.shaderParms[ SHADERPARM_ALPHA ] = 0.4f;
+    laserSightRenderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = 0.0f;
+    laserSightRenderEntity.shaderParms[5] = 0.0f;
+    laserSightRenderEntity.shaderParms[6] = 0.0f;
+    laserSightRenderEntity.shaderParms[7] = 0.0f;
+
+    crosshairHandle = -1;
+    // model to place crosshair or red dot into 3d space
+    memset( &crosshairEntity, 0, sizeof( crosshairEntity ) );
+    crosshairEntity.hModel = renderModelManager->FindModel( "/models/mapobjects/weaponsight.lwo" );
+    crosshairEntity.weaponDepthHack = true;
+    lastCrosshairMode = -1;
+
+    skinCrosshairDot = declManager->FindSkin( "skins/vr/crosshairDot" );
+    skinCrosshairCircleDot = declManager->FindSkin( "skins/vr/crosshairCircleDot" );
+    skinCrosshairCross = declManager->FindSkin( "skins/vr/crosshairCross" );
+}
+
+/*
+==============
+hhPlayer::UpdateLaserSight
+==============
+*/
+idCVar	g_laserSightWidth( "g_laserSightWidth", "0.7", CVAR_FLOAT | CVAR_ARCHIVE, "laser sight beam width" ); // Koz default was 2, IMO too big in VR.
+idCVar	g_laserSightLength( "g_laserSightLength", "1000", CVAR_FLOAT | CVAR_ARCHIVE, "laser sight beam length" ); // Koz default was 250, but was to short in VR.  Length will be clipped if object is hit, this is max length for the hit trace.
+void hhPlayer::UpdateLaserSight() {
+    idVec3	muzzleOrigin;
+    idMat3	muzzleAxis;
+
+    idVec3 end, start;
+    trace_t traceResults;
+
+    float beamLength = g_laserSightLength.GetFloat(); // max length to run trace.
+
+    int sightMode = vr_weaponSight.GetInteger();
+
+    bool hideSight = false;
+
+    bool traceHit = false;
+    //rvWeapon* weapon = currentWeapon;
+
+    // In Multiplayer, weapon might not have been spawned yet.
+    if( weapon ==  NULL )
+    {
+        return;
+    }
+
+    // check if lasersight should be hidden
+    muzzleAxis = weapon->GetMuzzleAxis();
+    muzzleOrigin = weapon->GetMuzzlePosition();
+    if ( !laserSightActive ||							// Koz allow user to toggle lasersight.
+         sightMode == -1 ||
+         gameLocal.inCinematic ||
+         !weapon->IsReady())
+    {
+        // || !weapon->GetMuzzlePositionWithHacks(muzzleOrigin, muzzleAxis)
+        hideSight = true;
+    }
+
+    // calculate the beam origin and length.
+    start = muzzleOrigin - muzzleAxis[0] * 2.0f;
+    end = start + muzzleAxis[0] * beamLength;
+    float distance = (start - end).Length();
+
+    // check if the value is valid
+    if (isnan(distance) || (distance <= 0)) {
+        hideSight = true;
+    }
+
+    if ( hideSight == true || ( sightMode != 0 && sightMode < 4 ) )
+    {
+        laserSightRenderEntity.allowSurfaceInViewID = -1;
+        if( laserSightHandle != -1 )
+        {
+            gameRenderWorld->FreeEntityDef( laserSightHandle );
+            laserSightHandle = -1;
+        }
+    }
+
+    if ( ( hideSight == true || sightMode == 0 ) )
+    {
+        crosshairEntity.allowSurfaceInViewID = -1;
+        if ( crosshairHandle != -1 )
+        {
+            gameRenderWorld->FreeEntityDef( crosshairHandle );
+            crosshairHandle = -1;
+        }
+    }
+
+
+    if ( hideSight) return;
+
+    // Koz begin : Keep the lasersight from clipping through everything.
+
+    traceHit = gameLocal.clip.TracePoint( traceResults, start, end, MASK_SHOT_RENDERMODEL, this );
+    if ( traceHit )
+    {
+        beamLength *= traceResults.fraction;
+    }
+
+
+    if ( (vr_weaponSight.GetInteger() == 0 || vr_weaponSight.GetInteger() > 3 )  && !hideSight ) // using the lasersight
+    {
+        // only show in the player's view
+        // Koz - changed show lasersight shows up in all views/reflections in VR
+        laserSightRenderEntity.allowSurfaceInViewID = 0;// entityNumber + 1;
+        laserSightRenderEntity.axis.Identity();
+        laserSightRenderEntity.origin = start;
+
+
+        // program the beam model
+        idVec3&	target = *reinterpret_cast<idVec3*>( &laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_END_X] );
+        target = start + muzzleAxis[0] * beamLength;
+
+        laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_WIDTH] = g_laserSightWidth.GetFloat();
+        laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_END_Z] = beamLength; // DEFUNKT
+
+        if ( laserSightHandle == -1 )
+        {
+            laserSightHandle = gameRenderWorld->AddEntityDef( &laserSightRenderEntity );
+        }
+        else
+        {
+            gameRenderWorld->UpdateEntityDef( laserSightHandle, &laserSightRenderEntity );
+        }
+    }
+
+    if ( sightMode < 1 || hideSight ) return;
+
+    // update the crosshair model
+    // set the crosshair skin
+
+    switch ( sightMode )
+    {
+        case 4:
+        case 1:
+            crosshairEntity.customSkin = skinCrosshairDot;
+            break;
+
+        case 5:
+        case 2:
+            crosshairEntity.customSkin = skinCrosshairCircleDot;
+            break;
+
+        case 6:
+        case 3:
+            crosshairEntity.customSkin = skinCrosshairCross;
+            break;
+
+        default:
+            crosshairEntity.customSkin = skinCrosshairDot;
+
+    }
+
+    if (sightMode > 0) crosshairEntity.allowSurfaceInViewID = entityNumber + 1;
+    crosshairEntity.axis.Identity();
+
+    static float muzscale = 0.0f ;
+
+    muzscale = 1 + beamLength / 100;
+    crosshairEntity.axis = muzzleAxis * muzscale;
+
+    bool aimLadder = false, aimActor = false, aimElevator = false;
+
+    static idAngles surfaceAngle = ang_zero;
+
+    if ( traceHit )
+    {
+        muzscale = 1 + beamLength / 100;
+
+        if ( vr_weaponSightToSurface.GetBool() )
+        {
+            aimLadder = traceResults.c.material && ( traceResults.c.material->GetSurfaceFlags() & SURF_LADDER );
+            idEntity* aimEntity = gameLocal.GetTraceEntity(traceResults);
+            if (aimEntity)
+            {
+                if (aimEntity->IsType(idActor::Type))
+                    aimActor = aimEntity->health > 0;
+                else if (aimEntity->IsType(idElevator::Type))
+                    aimElevator = true;
+                else if (aimEntity->IsType(idStaticEntity::Type) || aimEntity->IsType(idLight::Type))
+                {
+                    renderEntity_t *rend = aimEntity->GetRenderEntity();
+                    if (rend)
+                    {
+                        idRenderModel *model = rend->hModel;
+                        aimElevator = (model && idStr::Cmp(model->Name(), "models/mapobjects/elevators/elevator.lwo") == 0);
+                    }
+                }
+            }
+
+            // fake it till you make it. there must be a better way. Too bad my brain is broken.
+
+            static idAngles muzzleAngle = ang_zero;
+            static idAngles diffAngle = ang_zero;
+            static float rollDiff = 0.0f;
+
+            surfaceAngle = traceResults.c.normal.ToAngles().Normalize180();
+            muzzleAngle = muzzleAxis.ToAngles().Normalize180();
+
+            surfaceAngle.pitch *= -1;
+            surfaceAngle.yaw += 180;
+            surfaceAngle.Normalize180();
+
+            diffAngle = idAngles( 0, 0, muzzleAngle.yaw - surfaceAngle.yaw ).Normalize180();
+
+            rollDiff = diffAngle.roll * 1 / ( 90 / surfaceAngle.pitch );
+
+            surfaceAngle.roll = muzzleAngle.roll - rollDiff;
+            surfaceAngle.Normalize180();
+
+            crosshairEntity.axis = surfaceAngle.ToMat3() * muzscale;
+        }
+        else
+        {
+            crosshairEntity.axis = muzzleAxis * muzscale;
+        }
+    }
+
+    crosshairEntity.origin = start + muzzleAxis[0] * beamLength;
+
+    if ( crosshairHandle == -1 )
+    {
+        crosshairHandle = gameRenderWorld->AddEntityDef( &crosshairEntity );
+    }
+    else
+    {
+        gameRenderWorld->UpdateEntityDef( crosshairHandle, &crosshairEntity );
+    }
 }
 
 /*
@@ -5058,6 +5312,20 @@ hhPlayer::Think
 void hhPlayer::Think( void ) {
 	renderEntity_t *headRenderEnt;
 
+	//Lubos BEGIN
+	bool zoomed = true;
+	if ( weapon.GetEntity() ) {
+		auto* weaponEnt = weapon.GetEntity();
+		if ( ! ( weaponEnt &&
+				 weaponEnt->IsType( hhWeaponZoomable::Type ) &&
+				 reinterpret_cast<hhWeaponZoomable *> (weaponEnt)->IsZoomed() ) ) {
+			zoomed = false;
+		}
+	}
+	bool canAim = (currentWeapon != 1) && (currentWeapon != 3); //no wrench and crawler
+	laserSightActive = ( cvarSystem->GetCVarInteger( "vr_weaponSight" ) > 0 ) && !vr_weaponWheel.GetBool() && !zoomed && canAim;
+	//Lubos END
+
 	UpdatePossession();
 
 	UpdatePlayerIcons();
@@ -5340,6 +5608,8 @@ void hhPlayer::Think( void ) {
 		LinkCombat();
 		playerView.CalculateShake();
 	}
+
+	UpdateLaserSight(); //Lubos
 
 	if ( g_showEnemies.GetBool() ) {
 		idActor *ent;
@@ -7373,6 +7643,8 @@ void hhPlayer::Restore( idRestoreGame *savefile ) {
 	handNext.Restore( savefile );
 	possessedTommy.Restore( savefile );
 
+	InitLaserSight(); //Lubos
+
 	savefile->ReadStaticObject( vehicleInterfaceLocal );
 	SetVehicleInterface( &vehicleInterfaceLocal );
 
@@ -7494,6 +7766,9 @@ void hhPlayer::Restore( idRestoreGame *savefile ) {
 	if ( bLighter ) {
 		lighterHandle = gameRenderWorld->AddLightDef( &lighter );
 	}
+
+	//Lubos set toggle according to setting (don't wanna break saves)
+	laserSightActive = vr_weaponSight.GetInteger() > 0;
 }
 
 int hhPlayer::GetSpiritPower() {
