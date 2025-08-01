@@ -1128,6 +1128,9 @@ bool hhPlayer::IsWeaponReady( int weapon )
         case HH_WEAPON_SOULSTRIPPER: weapon = 4; break;
     }
     if ((weapon > 0) && (inventory.weapons & (1 << weapon))) {
+        if (weapon == 4) {
+            return true;
+        }
         const char* weap = spawnArgs.GetString(va( "def_weapon%d", weapon));
         return inventory.HasAmmo(weap);
     }
