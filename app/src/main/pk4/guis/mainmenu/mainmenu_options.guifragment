@@ -310,9 +310,9 @@
 							shadow		1
 							forecolor	EDITABLE_FORECOLOR_COMMA
 							hovercolor	EDITABLE_HOVERCOLOR_COMMA
-							choices		"No;Yes"
-							values		"0;1"
-							cvar		"g_crosshair"
+							choices		"No;Red dot;Circle dot;Crosshair;Beam + Dot"
+							values		"0;1;2;3;4"
+							cvar		"vr_weaponSight"
 							choiceType	1
 						}
 					}

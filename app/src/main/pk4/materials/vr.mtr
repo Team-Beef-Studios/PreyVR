@@ -1,0 +1,62 @@
+vr/weaponsight
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/laserdot.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+vr/weaponsightCircleDot
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/lasercircledot.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+vr/weaponsightCross
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/lasercrosshair.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+vr/weaponsight/laserbeam {
+    qer_editorimage guis/assets/weaponsight/laserbeam.tga
+    noShadows
+    noSelfShadow
+    twosided
+    translucent
+    nonsolid
+    noimpact
+    {
+        blend add
+        map guis/assets/weaponsight/laserbeam2.tga
+        vertexcolor
+        translate time * 0.10, 1.00
+        noclamp
+    }
+    {
+        blend add
+        map guis/assets/weaponsight/laserbeam3.tga
+        vertexcolor
+        translate time * 0.10, time * 0.90
+        noclamp
+    }
+}

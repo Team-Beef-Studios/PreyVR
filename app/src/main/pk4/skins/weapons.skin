@@ -1,0 +1,96 @@
+//Lubos BEGIN
+/*skin skins/vr/crosshairDot{
+}
+
+skin skins/vr/crosshairCircleDot{
+	vr/weaponsight vr/weaponsightCircleDot
+}
+
+skin skins/vr/crosshairCross{
+	vr/weaponsight vr/weaponsightCross
+}*/
+//Lubos END
+
+skin skins/weapons/arrowdraw
+{
+	textures/common/nodraw						models/weapons/bow/arrow
+}
+
+skin skins/weapons/arrownodraw
+{
+	models/weapons/bow/arrow					textures/common/nodraw
+	models/weapons/bow_world/bow_world_arrow	textures/common/nodraw
+}
+
+skin skins/weapons/arrow_weak
+{
+	models/weapons/bow/arrow					models/weapons/bow/arrow_weak
+}
+
+skin skins/weapons/bow_arrow_weak
+{
+	models/weapons/bow/bow_arrow					models/weapons/bow/bow_arrow_weak
+}
+
+skin skins/weapons/crawler_nonade
+{
+	models/weapons/crawler/crawler				textures/common/nodraw
+}
+
+skin skins/weapons/crawler_nade
+{
+	models/weapons/crawler/crawler				models/weapons/crawler/crawler
+}
+
+skin skins/weapons/autogren_nodraw
+{
+	models/weapons/autocannon/autocannonchunk	textures/common/nodraw
+}
+
+skin skins/weapons/crawlerlauncherdraw
+{
+	textures/common/nodraw						models/weapons/crawler/crawler
+}
+
+skin skins/weapons/crawlerlaunchernodraw
+{
+	models/weapons/crawler/crawler				textures/common/nodraw
+	models/weapons/crawler/crawler_ammo			textures/common/nodraw
+}
+
+skin skins/weapons/crawlerlauncherone
+{
+	models/weapons/crawler/crawler				models/weapons/crawler/crawler_amber
+	models/weapons/crawler/crawler_ammo			textures/common/nodraw
+}
+
+skin skins/weapons/crawler_amber
+{
+	models/weapons/crawler/crawler				models/weapons/crawler/crawler_amber
+	models/weapons/crawler/crawler_ammo			models/weapons/crawler/crawler_amber
+}
+
+skin skins/items/crawler_can_amber
+{	// Used specifically for the crawler can
+	models/weapons/crawler/crawler_ammo			models/weapons/crawler/crawler_can_amber
+	models/items/crawler_ammo/crawler_ammo		models/items/crawler_ammo/crawler_ammo
+}
+
+skin skins/weapons/hiderprojdraw
+{
+	textures/common/nodraw						models/weapons/hider/hiderglass
+}
+
+skin skins/weapons/hiderprojnodraw
+{
+	models/weapons/hider/hiderglass				textures/common/nodraw
+}
+
+skin skins/weapons/hidernoblink {
+	models/weapons/hider/pickup/hider_pickup	models/weapons/hider/pickup/hider_pickup_noblink
+}
+
+//for when a weapon is waiting to respawn in mp
+skin skins/weapons/mpweapongone {
+	*			models/weapons/mpweapongone
+}
