@@ -76,12 +76,13 @@ Special thanks to all early versions testers on **Team Beef** discord server!
 * View bobbing (feels weird in VR)
 
 ### Features added to this project
-* "3D" aiming cursor with autoscaling
+* 3D aiming cursor and laser beam
 * 6DoF motion tracking (mapping movement to keys + elevation adjust)
 * 6DoF weapon tracking (apply controller movement to weapons)
 * Apply headset refreshrate to game
 * Automatic fix of axis misalignment
 * Big hunter scene recreated (the engine doesn't support original animation)
+* Bloom effect
 * Camera shaking option (shaking adds immersion but also motion sickness)
 * Demo data without DDS textures (DDS textures are unsupported by the engine)
 * Downloader to get demo data or mods
@@ -90,23 +91,26 @@ Special thanks to all early versions testers on **Team Beef** discord server!
 * Fluent rifle weapon zooming
 * Full weapons models (original game doesn't contain back side of the weapon)
 * Height adjust (helpful for sitting mode)
+* Hidden cheat menu
 * Hidden god mode cheat trick
 * Menu screens adjusted (workaround for missing UI features, VR options)
 * Motion attack for wrench weapon
 * Motion sickness warning on level 2 loading screen
+* MSAA/Supersampling
 * Opening ammo cabinets (missing in the Android version)
 * Overlay effects adjusted to VR screen
+* PBR shader
 * Stereo rendering
 * Switching between VR/flat mode depending on scene
 * VR vehicle control
+* Weapon wheel
 
 ### Known issues
 * 6DoF doesn't allow movement over invisible colliders
 * Jen has detached head on screen (level Hidden Agendas)
 * Jukebox doesn't update the pointer (collider issue)
 * Light effects are not correct (roadhouse and dreamworld)
-* Performance issues when fog is present
-* Performance issues when portals are shown
+* Portals render only when close to player
 * Screen with Jen is not rendered (level Hidden Agendas)
 * UI tabs are not rendered correctly
 * Weapons have incorrect alignment when putting them down/behind
@@ -114,8 +118,6 @@ Special thanks to all early versions testers on **Team Beef** discord server!
 ### Missing features
 * BHaptics support (I do not own the accessory)
 * Controling ingame UI using fingers
-* Disappear effect (unsupported by the renderer)
-* Glitch effect (unsupported by the renderer) 
-* Glow effect (unsupported by the renderer)
+* Glitch effect (unsupported by the renderer)
 * Network communication (missing source code)
 * Soft shadows (unsupported by the renderer) 
