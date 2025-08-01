@@ -164,6 +164,7 @@ class hhWeapon: public hhAnimatedEntity {
 
 		int					GetKickEndTime() const { return kick_endtime; }
 		void				SetKickEndTime( int endTime ) { kick_endtime = endTime; }
+		idMat3				GetMuzzleAxis() const { return fireController->GetSelfConst()->GetAxis(); }
 		idVec3				GetMuzzlePosition() const { return fireController->GetMuzzlePosition(); }
 		idVec3				GetAltMuzzlePosition() const { return altFireController->GetMuzzlePosition(); }
 

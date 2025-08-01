@@ -54,6 +54,8 @@ public:
 	void				UpdateWeaponJoints(void); //rww
 
 	virtual bool		CheckThirdPersonMuzzle(idVec3 &origin, idMat3 &axis); //rww
+
+	virtual const hhRenderEntity *GetSelfConst() const;
 protected:
 	void				SetWeaponJointHandleList( const char* keyPrefix, hhCycleList<weaponJointHandle_t>& jointList );
 	void				SaveWeaponJointHandleList( const hhCycleList<weaponJointHandle_t>& jointList, idSaveGame *savefile ) const;
@@ -66,7 +68,6 @@ protected:
 	virtual const idBounds& GetCollisionBBox();
 
 	virtual hhRenderEntity *GetSelf();
-	virtual const hhRenderEntity *GetSelfConst() const;
 
 protected:
 	idEntityPtr<hhWeapon> self;

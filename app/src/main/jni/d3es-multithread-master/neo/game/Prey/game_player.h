@@ -420,9 +420,23 @@ public:
 	//Lubos BEGIN
 	void				DrawWeaponWheel( idUserInterface *hud );
 	bool				IsWeaponReady( int weapon );
+	void				InitLaserSight();
+	void				UpdateLaserSight();
 	//Lubos END
 
 protected:
+	// laser sight - technically every weapon instance could have its own laser sight,
+	// but laser sights are only active when in a player's hand, so make it one per hand
+	renderEntity_t laserSightRenderEntity;	// replace crosshair for 3DTV
+	qhandle_t laserSightHandle;
+	renderEntity_t crosshairEntity; // Koz add a model to place the crosshair into the world
+	qhandle_t crosshairHandle;
+	int lastCrosshairMode;
+	bool laserSightActive; //GB
+	const idDeclSkin* skinCrosshairDot;
+	const idDeclSkin* skinCrosshairCircleDot;
+	const idDeclSkin* skinCrosshairCross;
+
 	idUserInterface *	guiOverlay;
 	idClipModel			thirdPersonCameraClipBounds;
 	float				viewAnglesSensitivity;
