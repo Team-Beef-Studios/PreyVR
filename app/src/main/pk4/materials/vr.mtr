@@ -7,7 +7,6 @@ vr/weaponsight
 	{
 		blend add
 		map models/images/laserdot.tga
-		rgb			guiLightTable[ time *.25 ] * 1.25
 	}
 }
 
@@ -20,7 +19,6 @@ vr/weaponsightCircleDot
 	{
 		blend add
 		map models/images/lasercircledot.tga
-		rgb			guiLightTable[ time *.25 ] * 1.25
 	}
 }
 
@@ -33,7 +31,6 @@ vr/weaponsightCross
 	{
 		blend add
 		map models/images/lasercrosshair.tga
-		rgb			guiLightTable[ time *.25 ] * 1.25
 	}
 }
 
