@@ -666,7 +666,11 @@ JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * e
 	}
 
 	//Set platform flags
-	if (strcmp(vendor, "PICO") == 0) {
+	if (strcmp(vendor, "PLAY FOR DREAM") == 0) {
+		VR_SetPlatformFLag(VR_PLATFORM_CONTROLLER_QUEST, true);
+		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_INSTANCE, true);
+		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
+	} else if (strcmp(vendor, "PICO") == 0) {
 		VR_SetPlatformFLag(VR_PLATFORM_CONTROLLER_PICO, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_INSTANCE, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_REFRESH, true);
