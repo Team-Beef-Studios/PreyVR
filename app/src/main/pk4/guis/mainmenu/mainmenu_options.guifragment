@@ -927,7 +927,7 @@
 								textscale       0.33
 								shadow          1
 								text            "Laggy on most HMDs!"
-								visible         ("gui::powerfulHMD" != 2)
+								visible         1
 							}
 						}
 
@@ -966,7 +966,7 @@
 								textscale       0.33
 								shadow          1
 								text            "Laggy on most HMDs!"
-								visible         ("gui::powerfulHMD" != 2)
+								visible         1
 							}
 						}
 					}
@@ -1079,7 +1079,7 @@
 							leftMat			"guis/assets/menu/textbar_corner.tga"
 							middleMat		"guis/assets/menu/textbarstrip.tga"
 							rightMat		"guis/assets/menu/textbar_invcorner.tga"
-							visible			("gui::powerfulHMD" > 0)
+							visible			1
 
 							windowDef OVR_Title_RefreshRate {
 								rect		0, 0, 200, 25
@@ -1098,8 +1098,8 @@
 								textaligny	0
 								textscale	0.33
 								shadow		1
-								choices		"72Hz;90Hz"
-								values		"72;90"
+								choices		"60Hz (Quest 2 only);72Hz;90Hz"
+								values		"60;72;90"
 								cvar		"vr_refreshrate"
 								choiceType	1
 							}
