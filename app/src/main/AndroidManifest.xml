@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 		package="com.lvonasek.preyvr"
-		android:versionCode="122"
-		android:versionName="1.2.2"
+		android:versionCode="123"
+		android:versionName="1.2.3"
 		android:installLocation="auto">
 
 
@@ -26,6 +26,7 @@
 		android:extractNativeLibs="true">
 
 		<meta-data android:name="com.samsung.android.vr.application.mode" android:value="vr_only"/>
+		<meta-data android:name="com.oculus.dualcorecpuset" android:value="true" />
 		<meta-data android:name="com.oculus.supportedDevices" android:value="quest2|questpro|quest3|quest3s"/>
 		<meta-data android:name="com.yvr.intent.category.VR" android:value="vr_only" />
 		<meta-data android:name="pvr.app.type" android:value="vr" />

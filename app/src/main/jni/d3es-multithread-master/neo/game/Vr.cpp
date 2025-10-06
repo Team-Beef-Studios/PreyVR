@@ -189,7 +189,7 @@ void ApplyVRWeaponTransform(idMat3 &axis, idVec3& origin)
 	idAngles hmdAngles;
 	hmdAngles[PITCH] = pVRClientInfo->hmdorientation_temp[PITCH];
 	hmdAngles[YAW] = pVRClientInfo->hmdorientation_temp[YAW];
-	hmdAngles[ROLL] = pVRClientInfo->hmdorientation_temp[ROLL];
+	hmdAngles[ROLL] = 0;//pVRClientInfo->hmdorientation_temp[ROLL];
 
 	// Get offset between hand and weapon
 	auto head = pVRClientInfo->hmdposition_last;

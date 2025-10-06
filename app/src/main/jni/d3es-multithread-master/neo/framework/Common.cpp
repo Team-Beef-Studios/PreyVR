@@ -2711,7 +2711,7 @@ void idCommonLocal::Frame(void)
 
 		eventLoop->RunEventLoop();
 
-		com_frameTime = com_ticNumber * USERCMD_MSEC;
+		com_frameTime += USERCMD_MSEC; //Lubos
 
 		idAsyncNetwork::RunFrame();
 
@@ -2771,7 +2771,7 @@ void idCommonLocal::GUIFrame(bool execCmd, bool network)
 		pull_input_event(1);
 #endif
 	eventLoop->RunEventLoop(execCmd);	// and execute any commands
-	com_frameTime = com_ticNumber * USERCMD_MSEC;
+	com_frameTime += USERCMD_MSEC; //Lubos
 
 	if (network) {
 		idAsyncNetwork::RunFrame();

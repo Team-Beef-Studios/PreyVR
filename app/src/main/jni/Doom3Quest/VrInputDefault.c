@@ -163,8 +163,8 @@ void HandleInput_Default(int controlscheme, int switchsticks)
 			static bool itemSwitched = false;
 			bool weaponWheel = (Android_GetCVarInteger("vr_weaponToggle") == 1) && !pVRClientInfo->vehicleMode;
 			if (between(-0.2f, pPrimaryJoystick.x, 0.2f) &&
-				(between(0.8f, pPrimaryJoystick.y, 1.0f) ||
-				 between(-1.0f, pPrimaryJoystick.y, -0.8f)))
+				(between(0.7f, pPrimaryJoystick.y, 1.0f) ||
+				 between(-1.0f, pPrimaryJoystick.y, -0.7f)))
 			{
 				pVRClientInfo->weaponZooming = between(0.5f, pPrimaryJoystick.y, 1.0f) ? 1 : -1; //Lubos
 				if (!itemSwitched) {
@@ -173,7 +173,7 @@ void HandleInput_Default(int controlscheme, int switchsticks)
 						//Show weapon wheel
 						Android_SetImpulse(UB_IMPULSE23);
 					}
-					else if (between(0.8f, pPrimaryJoystick.y, 1.0f))
+					else if (between(0.7f, pPrimaryJoystick.y, 1.0f))
 					{
 						//Previous Weapon
 						Android_SetImpulse(UB_IMPULSE15);
