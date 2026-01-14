@@ -48,6 +48,7 @@ typedef struct {
     bool weaponGun;
     bool weaponModifier;
     bool weaponTwoHand;
+    bool weaponTwoHandZoom;
     vec3_t weaponOffset;
     vec3_t hmdorientation_diff;
     vec3_t hmdorientation_offset;

@@ -242,8 +242,16 @@ void HandleInput_Default(int controlscheme, int switchsticks)
                     }
                 }
             }
-			pVRClientInfo->weaponModifier = offhandButtonsNew & ovrButton_GripTrigger;
-	        //Lubos END
+            static bool altAttackSent = false;
+            pVRClientInfo->weaponModifier = offhandButtonsNew & ovrButton_GripTrigger;
+            if (pVRClientInfo->weaponTwoHandZoom && !pVRClientInfo->weaponModifier) {
+                Android_ButtonChange(UB_ATTACK_ALT, 1);
+                altAttackSent = true;
+            } else if (altAttackSent) {
+                Android_ButtonChange(UB_ATTACK_ALT, 0);
+                altAttackSent = false;
+            }
+            //Lubos END
 
             //We need to record if we have started firing primary so that releasing trigger will stop definitely firing, if user has pushed grip
             //in meantime, then it wouldn't stop the gun firing and it would get stuck

@@ -897,10 +897,20 @@ void idUsercmdGenLocal::MakeCurrent(void)
 			wasVehicleMode = true;
 		} else {
 			VR_GetMove(&forward, &strafe, &hmd_forward, &hmd_strafe, &up, &yaw, &pitch, &roll);
+			if (pVRClientInfo->weaponZoom && pVRClientInfo->weaponModifier && pVRClientInfo->weaponTwoHand) {
+				auto weapon = cvarSystem->GetCVarInteger("vr_weaponHand") == 0 ? pVRClientInfo->rhandposition : pVRClientInfo->lhandposition;
+				auto offhand = cvarSystem->GetCVarInteger("vr_weaponHand") != 0 ? pVRClientInfo->rhandposition : pVRClientInfo->lhandposition;
+				idAngles angles = idVec3(weapon[2] - offhand[2], weapon[0] - offhand[0], -weapon[1] + offhand[1]).ToAngles();
+				pitch += angles.pitch - pVRClientInfo->hmdorientation_temp[PITCH];
+				yaw += angles.yaw - pVRClientInfo->hmdorientation_temp[YAW];
+				pVRClientInfo->weaponTwoHandZoom = true;
+			} else {
+				pVRClientInfo->weaponTwoHandZoom = false;
+			}
 			viewangles[PITCH] = pitch;
 			viewangles[YAW] = yaw;
 			viewangles[ROLL] = roll;
-			if (wasVehicleMode) {
+			if (wasVehicleMode || pVRClientInfo->weaponTwoHandZoom) {
 				for (int axis = 0; axis < 3; axis++) {
 					pVRClientInfo->hmdorientation_diff[axis] = 0;
 					pVRClientInfo->hmdorientation_offset[axis] = 0;
