@@ -1037,7 +1037,7 @@ void hhPlayer::UpdateHudStats( idUserInterface *_hud ) {
 void hhPlayer::DrawWeaponWheel(idUserInterface *_hud) {
     //Update visibility
     _hud->SetStateInt("weapon_wheel", vr_weaponWheel.GetBool() ? 1 : 0);
-    if (!vr_weaponWheel.GetBool() || InVehicle() || IsSpiritOrDeathwalking()) {
+    if (!vr_weaponWheel.GetBool() || InVehicle() || IsSpiritOrDeathwalking() || pVRClientInfo->weaponZoom) {
         return;
     }
 
@@ -3322,7 +3322,7 @@ void hhPlayer::PerformImpulse( int impulse ) {
 			break;
 		//Lubos BEGIN
 		case IMPULSE_23: {
-			if (InVehicle() || IsSpiritOrDeathwalking()) {
+			if (InVehicle() || IsSpiritOrDeathwalking() || pVRClientInfo->weaponZoom) {
 				return;
 			}
 			gameLocal.Printf("Show weapon wheel");

@@ -16,6 +16,17 @@ float vrConfigFloat[VR_CONFIG_FLOAT_MAX] = {};
 PFN_xrGetDisplayRefreshRateFB pfnGetDisplayRefreshRate = NULL;
 PFN_xrRequestDisplayRefreshRateFB pfnRequestDisplayRefreshRate = NULL;
 
+XrPassthroughFB passthrough = XR_NULL_HANDLE;
+XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
+DECL_PFN(xrCreatePassthroughFB);
+DECL_PFN(xrDestroyPassthroughFB);
+DECL_PFN(xrPassthroughStartFB);
+DECL_PFN(xrPassthroughPauseFB);
+DECL_PFN(xrCreatePassthroughLayerFB);
+DECL_PFN(xrDestroyPassthroughLayerFB);
+DECL_PFN(xrPassthroughLayerPauseFB);
+DECL_PFN(xrPassthroughLayerResumeFB);
+
 void VR_UpdateStageBounds(ovrApp* pappState) {
 	XrExtent2Df stageBounds = {};
 
@@ -185,6 +196,17 @@ void VR_InitRenderer( engine_t* engine, bool multiview ) {
 		VR_DestroyRenderer(engine);
 	}
 
+	if (VR_GetPlatformFlag(VR_PLATFORM_EXTENSION_PASSTHROUGH)) {
+		INIT_PFN(xrCreatePassthroughFB);
+		INIT_PFN(xrDestroyPassthroughFB);
+		INIT_PFN(xrPassthroughStartFB);
+		INIT_PFN(xrPassthroughPauseFB);
+		INIT_PFN(xrCreatePassthroughLayerFB);
+		INIT_PFN(xrDestroyPassthroughLayerFB);
+		INIT_PFN(xrPassthroughLayerPauseFB);
+		INIT_PFN(xrPassthroughLayerResumeFB);
+	}
+
 	int eyeW, eyeH;
 	VR_GetResolution(engine, &eyeW, &eyeH);
 	VR_SetConfig(VR_CONFIG_VIEWPORT_WIDTH, eyeW);
@@ -225,10 +247,31 @@ void VR_InitRenderer( engine_t* engine, bool multiview ) {
 		ovrRenderer_SetFoveation(&engine->appState.Instance, &engine->appState.Session, &engine->appState.Renderer, XR_FOVEATION_LEVEL_HIGH_FB, 0, XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB);
 	}
 #endif
+
+	if (VR_GetPlatformFlag(VR_PLATFORM_EXTENSION_PASSTHROUGH)) {
+		XrPassthroughCreateInfoFB ptci = {XR_TYPE_PASSTHROUGH_CREATE_INFO_FB};
+		XrResult result;
+		OXR(result = xrCreatePassthroughFB(engine->appState.Session, &ptci, &passthrough));
+
+		if (XR_SUCCEEDED(result)) {
+			XrPassthroughLayerCreateInfoFB plci = {XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB};
+			plci.passthrough = passthrough;
+			plci.purpose = XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB;
+			OXR(xrCreatePassthroughLayerFB(engine->appState.Session, &plci, &passthroughLayer));
+		}
+
+		OXR(xrPassthroughStartFB(passthrough));
+	}
 	initialized = true;
 }
 
 void VR_DestroyRenderer( engine_t* engine ) {
+	if (VR_GetPlatformFlag(VR_PLATFORM_EXTENSION_PASSTHROUGH)) {
+		OXR(xrPassthroughLayerPauseFB(passthroughLayer));
+		OXR(xrPassthroughPauseFB(passthrough));
+		OXR(xrDestroyPassthroughFB(passthrough));
+		passthrough = XR_NULL_HANDLE;
+	}
 	ovrRenderer_Destroy(&engine->appState.Renderer);
 	free(projections);
 	initialized = false;
@@ -245,6 +288,13 @@ bool VR_InitFrame( engine_t* engine ) {
 	if (stageBoundsDirty) {
 		VR_UpdateStageBounds(&engine->appState);
 		stageBoundsDirty = false;
+	}
+
+	// Update passthrough
+	if (VR_GetConfig(VR_CONFIG_PASSTHROUGH)) {
+		OXR(xrPassthroughLayerResumeFB(passthroughLayer));
+	} else {
+		OXR(xrPassthroughLayerPauseFB(passthroughLayer));
 	}
 
 	XrFrameState frameState = {};
@@ -282,6 +332,10 @@ bool VR_InitFrame( engine_t* engine ) {
 
 	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_UNCENTERED)) {
 		fovy *= 1.1f;
+	}
+	if (VR_GetConfig(VR_CONFIG_PASSTHROUGH)) {
+		fovx /= 2.0f;
+		fovy /= 2.0f;
 	}
 
 	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
@@ -345,6 +399,16 @@ void VR_FinishFrame( engine_t* engine ) {
 	int layerCount = 0;
 	ovrCompositorLayer_Union layerUnion[ovrMaxLayerCount];
 	memset(layerUnion, 0, sizeof(ovrCompositorLayer_Union) * ovrMaxLayerCount);
+
+	if (VR_GetPlatformFlag(VR_PLATFORM_EXTENSION_PASSTHROUGH) && VR_GetConfig(VR_CONFIG_PASSTHROUGH)) {
+		if (passthroughLayer != XR_NULL_HANDLE) {
+			XrCompositionLayerPassthroughFB passthrough_layer = {XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB};
+			passthrough_layer.layerHandle = passthroughLayer;
+			passthrough_layer.flags = XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT;
+			passthrough_layer.space = XR_NULL_HANDLE;
+			layerUnion[layerCount++].Passthrough = passthrough_layer;
+		}
+	}
 
 	int vrMode = vrConfig[VR_CONFIG_MODE];
 	XrCompositionLayerProjectionView projection_layer_elements[2] = {};

@@ -1104,6 +1104,37 @@
 								choiceType	1
 							}
 						}
+
+						buttonDef OVR_MixedReality {
+							rect			10, 130, 400, 25
+							leftMat			"guis/assets/menu/textbar_corner.tga"
+							middleMat		"guis/assets/menu/textbarstrip.tga"
+							rightMat		"guis/assets/menu/textbar_invcorner.tga"
+							visible			1
+
+							windowDef OVR_Title_MixedReality {
+								rect		0, 0, 200, 25
+								forecolor	STATIC_FORECOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								text		"Home scale mode"
+							}
+							choiceDef OVR_Choice_MixedReality {
+								rect		200, 0, 200, 25
+								forecolor	EDITABLE_FORECOLOR_COMMA
+								hovercolor	EDITABLE_HOVERCOLOR_COMMA
+								textalign	1
+								textaligny	0
+								textscale	0.33
+								shadow		1
+								choices		"Off;On (Quest only)"
+								values		"0;1"
+								cvar		"vr_mixedReality"
+								choiceType	1
+							}
+						}
 					}
 				}
 			}

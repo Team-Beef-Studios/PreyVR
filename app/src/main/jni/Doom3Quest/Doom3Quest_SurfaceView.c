@@ -385,6 +385,7 @@ void Doom3Quest_prepareEyeBuffer( )
 	VR_SetConfigFloat(VR_CONFIG_CANVAS_ASPECT, inMenu ? 1 : 0.85f);
 	VR_SetConfigFloat(VR_CONFIG_CANVAS_DISTANCE, 4);
 	VR_SetConfig(VR_CONFIG_MODE, Doom3Quest_useScreenLayer() ? VR_MODE_STEREO_SCREEN : VR_MODE_STEREO_6DOF);
+	VR_SetConfig(VR_CONFIG_PASSTHROUGH, Android_GetCVarInteger("vr_mixedReality"));
 
 	VR_BeginFrame(VR_GetEngine());
 	VR_BindFramebuffer(VR_GetEngine());
@@ -669,15 +670,18 @@ JNIEXPORT void JNICALL Java_com_lvonasek_preyvr_GLES3JNILib_onCreate( JNIEnv * e
 	if (strcmp(vendor, "PLAY FOR DREAM") == 0) {
 		VR_SetPlatformFLag(VR_PLATFORM_CONTROLLER_QUEST, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_INSTANCE, true);
+		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PASSTHROUGH, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
 	} else if (strcmp(vendor, "PICO") == 0) {
 		VR_SetPlatformFLag(VR_PLATFORM_CONTROLLER_PICO, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_INSTANCE, true);
+		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PASSTHROUGH, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_REFRESH, true);
 	} else {
 		VR_SetPlatformFLag(VR_PLATFORM_CONTROLLER_QUEST, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_FOVEATION, true);
+		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PASSTHROUGH, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_REFRESH, true);
 		VR_SetPlatformFLag(VR_PLATFORM_VIEWPORT_UNCENTERED, true);

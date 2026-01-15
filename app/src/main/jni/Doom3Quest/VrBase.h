@@ -49,10 +49,14 @@ static void OXR_CheckErrors(XrInstance instance, XrResult result, const char* fu
 #define OXR(func) func;
 #endif
 
-enum { ovrMaxLayerCount = 2 };
+#define DECL_PFN(pfn) PFN_##pfn pfn = NULL
+#define INIT_PFN(pfn) OXR(xrGetInstanceProcAddr(engine->appState.Instance, #pfn, (PFN_xrVoidFunction*)(&pfn)))
+
+enum { ovrMaxLayerCount = 3 };
 enum { ovrMaxNumEyes = 2 };
 
 typedef union {
+	XrCompositionLayerPassthroughFB Passthrough;
 	XrCompositionLayerProjection Projection;
 	XrCompositionLayerCylinderKHR Cylinder;
 } ovrCompositorLayer_Union;
@@ -130,6 +134,7 @@ enum VRPlatformFlag {
 	VR_PLATFORM_CONTROLLER_QUEST,
 	VR_PLATFORM_EXTENSION_FOVEATION,
 	VR_PLATFORM_EXTENSION_INSTANCE,
+	VR_PLATFORM_EXTENSION_PASSTHROUGH,
 	VR_PLATFORM_EXTENSION_PERFORMANCE,
 	VR_PLATFORM_EXTENSION_REFRESH,
 	VR_PLATFORM_TRACKING_FLOOR,

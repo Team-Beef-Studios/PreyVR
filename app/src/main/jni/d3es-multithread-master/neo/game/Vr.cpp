@@ -176,6 +176,7 @@ idCVar vr_rumbleChainsaw( "vr_rumbleChainsaw", "1", CVAR_BOOL | CVAR_GAME | CVAR
 
 //Lubos BEGIN
 idCVar vr_haptics( "vr_haptics", "1", CVAR_INTEGER | CVAR_GAME, "Enable controller haptics" );
+idCVar vr_mixedReality( "vr_mixedReality", "0", CVAR_INTEGER | CVAR_GAME, "Enable mixed reality mode" );
 
 void ApplyVRWeaponTransform(idMat3 &axis, idVec3& origin)
 {
